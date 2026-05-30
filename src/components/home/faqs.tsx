@@ -33,7 +33,7 @@ const faqs: FAQItem[] = [
   {
     question: "What is Diamond Rank?",
     answer:
-      "Diamond Rank is an advanced qualification level with additional leadership and reward benefits.",
+      "Diamong Rank is advanced qualification for diamond autopool",
   },
   {
     question: "What are withdrawal charges?",
