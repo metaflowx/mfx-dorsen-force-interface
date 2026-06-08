@@ -19,12 +19,12 @@ export default function Home() {
       <Header />
       <div id="home"><Banner /></div>
       <div id="about"><Aboutdorsen /></div>
-      <div id="compensation"><Leadership/></div>
+      <div id="compensation"><Leadership /></div>
       <div id="whydorsen"><Whydorsen /></div>
       <div id="qualifications"><Qualification /></div>
       <div id="tokenomics"><Futurecard /></div>
       <div id="faqs"><Faqs /></div>
-      <div id="contact"><Community/></div>
+      <div id="contact"><Community /></div>
       <Footer />
     </>
   );

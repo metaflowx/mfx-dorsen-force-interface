@@ -65,29 +65,30 @@ export default function Header() {
       
        before:pointer-events-none
        ">
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-12 
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-12 
         bg-black
         px-6 py-3
         rounded-4xl
 
         ">
-          {menuItems.map((item, i) => (
-            <Link
-              key={i}
-              href={`#${item.href}`}
-              onClick={(e) => handleScroll(e, item.href)}
-              className="text-white hover:text-[#B254FA]  transition-colors duration-300 uppercase text-lg "
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        </div> 
+            {menuItems.map((item, i) => (
+              <Link
+                key={i}
+                href={`#${item.href}`}
+                onClick={(e) => handleScroll(e, item.href)}
+                className="text-white hover:text-[#B254FA]  transition-colors duration-300 uppercase text-lg "
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         {/* ================= DESKTOP AUTH BUTTONS ================= */}
         <div className="hidden lg:block">
 
-          <button
+        <Link href={""}>
+        <button
             className="
     relative overflow-hidden
     px-6 py-3
@@ -105,6 +106,7 @@ export default function Header() {
           >
             JOIN NOW
           </button>
+        </Link>
         </div>
 
         {/* ================= HAMBURGER ================= */}
