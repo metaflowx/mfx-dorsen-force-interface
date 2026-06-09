@@ -87,7 +87,7 @@ export default function Header() {
         {/* ================= DESKTOP AUTH BUTTONS ================= */}
         <div className="hidden lg:block">
 
-        <Link href={""}>
+        <Link href={"/dashboard"}>
         <button
             className="
     relative overflow-hidden

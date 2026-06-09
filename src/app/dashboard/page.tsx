@@ -50,6 +50,7 @@ import {
   Users,
   Trophy,
 } from "lucide-react";
+import { useState } from "react";
 
 
  const fadeUp = {
@@ -58,6 +59,34 @@ import {
  };
 
 export default function DashboardPage() {
+
+  const [referral, setReferral] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const joinContract = async () => {
+    if (!referral.trim()) {
+      alert("Please enter referral address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Yahan smart contract function call aayega
+      console.log("Amount:", 65);
+      console.log("Referral:", referral);
+
+      // Example API call
+      // await joinDorsenForceContract(referral);
+
+      alert("Contract joined successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Transaction failed");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-black text-white py-5">
       {/* Background Effect */}
@@ -116,6 +145,47 @@ export default function DashboardPage() {
          <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Diamond"}/>
          
        </motion.div>
+
+       <div className="w-full  rounded-[24px] border border-purple-600/70 bg-black/60 p-6">
+      
+
+      <div className="space-y-4">
+        <div>
+          <label className="mb-2 block text-gray-400">
+            Contract Amount
+          </label>
+
+          <input
+            type="text"
+            value="$65"
+            readOnly
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-gray-400">
+            Referral Address
+          </label>
+
+          <input
+            type="text"
+            value={referral}
+            onChange={(e) => setReferral(e.target.value)}
+            placeholder="Enter referral wallet address"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+          />
+        </div>
+
+        <button
+          onClick={joinContract}
+          disabled={loading}
+          className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
+        >
+          {loading ? "Processing..." : "Join Now"}
+        </button>
+      </div>
+    </div>
 
         {/* Middle Section */}
         <div className="grid lg:grid-cols-2 gap-5">

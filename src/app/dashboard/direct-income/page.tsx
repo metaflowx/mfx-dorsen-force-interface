@@ -54,7 +54,7 @@ export default function DirectIncomePage() {
         </div>
 
         {/* Distribution Table */}
-        <div className="rounded-[28px] border border-cyan-500 bg-black/90 p-6 md:p-8">
+        <div className="rounded-[28px] border border-cyan-500 bg-black/90 p-6 md:p-8 w-[320px] sm:w-full">
           <h2 className="text-3xl md:text-5xl font-bold mb-8">
             10-Level Distribution (36% of $65 = $23.40 total)
           </h2>

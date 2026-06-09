@@ -33,7 +33,7 @@ export default function Sidebar() {
             <div className="fixed top-0 left-0 w-full lg:hidden z-40 backdrop-blur-[10px]">
                 <div className="flex items-center justify-between p-4">
                     <div className="flex items-center jus gap-2">
-                        <Link className="text-center" href={"/"}><img src="/images/dorsenforce/logo.svg" alt="Logo" className="w-30 inline-block" /></Link>
+                        <Link className="text-center" href={"/"}><img src="/images/dorsenforce/logo.svg" alt="Logo" className="w-12 inline-block" /></Link>
                     </div>
                     <button onClick={() => setMenuOpen(true)}>
                         <FiMenu size={26} />
@@ -71,6 +71,23 @@ export default function Sidebar() {
                         />
                     ))}
                 </nav>
+                <div className="flex items-center justify-center mt-5 ">
+                    <div className="w-full   rounded-3xl border border-purple-700/60 bg-black/40 backdrop-blur-sm p-3 shadow-[0_0_30px_rgba(124,58,237,0.15)]">
+                        <h3 className="text-cyan-400 text-[20px] font-medium mb-2">
+                            Network on Dorsen Force
+                        </h3>
+
+                        <div className="space-y-2">
+                            <p className="text-white text-[16px]">
+                                All income paid in USDT
+                            </p>
+
+                            <p className="text-gray-400 text-[16px]">
+                                20% Admin LDF Fee on withdrawal
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             {/* DESKTOP SIDEBAR */}
@@ -87,6 +104,23 @@ export default function Sidebar() {
                         />
                     ))}
                 </nav>
+                <div className="flex items-center justify-center ">
+                    <div className="w-full   rounded-3xl border border-purple-700/60 bg-black/40 backdrop-blur-sm p-3 shadow-[0_0_30px_rgba(124,58,237,0.15)]">
+                        <h3 className="text-cyan-400 text-[20px] font-medium mb-2">
+                            Network on Dorsen Force
+                        </h3>
+
+                        <div className="space-y-2">
+                            <p className="text-white text-[16px]">
+                                All income paid in USDT
+                            </p>
+
+                            <p className="text-gray-400 text-[16px]">
+                                20% Admin LDF Fee on withdrawal
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </aside>
         </>
     );

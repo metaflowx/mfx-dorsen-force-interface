@@ -139,14 +139,14 @@ export default function AutoPoolPage() {
           variants={fadeUp}
           initial="hidden"
           animate="show"
-          className="rounded-[28px] border border-cyan-500 bg-black/90 p-6 md:p-8"
+          className="rounded-[28px] w-[320px] sm:w-full border border-cyan-500 bg-black/90 p-6 md:p-8"
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-8">
             2x Matrix Pool — 10 Levels
           </h2>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px]">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
                   <th className="pb-5 font-medium">
