@@ -1,4 +1,4 @@
 
 ## Getting Started
 
-# Dorsen-force v1.1.5
+# Dorsen-force v1.1.6
