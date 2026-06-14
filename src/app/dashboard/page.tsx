@@ -1,43 +1,3 @@
-// "use client";
-// import { motion } from "framer-motion";
-// import BalanceCard from "@/components/dashboard/balanceCard";
-
-// const fadeUp = {
-//   hidden: { opacity: 0, y: 30 },
-//   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-// };
-
-// export default function DashboardPage() {
-   
-  
-
-
-  
- 
-
-//   return (
-//     <div>
-//       <main>
-//         <motion.div
-//           variants={fadeUp}
-//           initial="hidden"
-//           animate="show"
-//           className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6"
-//         >
-          
-//           <BalanceCard title={"Total Earnings"} token={"$4,820.50"} usd={"$4,820.50"}/>
-//           <BalanceCard title={"Wallet Balance"} token={"$1,240.75"} usd={"$1,240.75"}/>
-//           <BalanceCard title={"Direct Referrals"} token={"24"} usd={"24"}/>
-//           <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Diamond"}/>
-         
-//         </motion.div>
- 
-//       </main>
-//     </div>
-//   );
-// }
-
-
 "use client";
 
 import BalanceCard from "@/components/dashboard/balanceCard";
@@ -50,43 +10,148 @@ import {
   Users,
   Trophy,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import ReferralCopy from "@/components/dashboard/referralCopy";
+import { useBlockNumber, useConnection, useReadContract, useReadContracts, useWriteContract } from "wagmi";
+import { useSearchParams } from "next/navigation";
+import useCheckAllowance from "../hooks/useCheckAllowance";
+import { dorsenConfig, DorsenForceContractAddress, USDTAddress } from "../constants/contract";
+import { Address, erc20Abi, formatEther, parseEther, parseUnits, zeroAddress } from "viem";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { extractDetailsFromError } from "@/libs/extractDetailsFromError";
+import { stringTrimMiddle } from "@/libs/stringTrimMiddle";
+import { useAppKit, useAppKitNetwork } from "@reown/appkit/react";
 
 
- const fadeUp = {
+const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
- };
+  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+export const communityAddress = "0x7c8AB5f6DF4159184261e40EDcb385E45FaBCD5c";
 
 export default function DashboardPage() {
-
-  const [referral, setReferral] = useState("");
+  const { open, close } = useAppKit();
+  const { chainId } = useAppKitNetwork()
   const [loading, setLoading] = useState(false);
+  const { address, isConnected } = useConnection()
+  const searchparm = useSearchParams();
+  const [referralAddress, setReferralAddress] = useState(searchparm.get("ref") || "");
+  const [isAproveERC20, setIsApprovedERC20] = useState(true);
 
-  const joinContract = async () => {
-    if (!referral.trim()) {
-      alert("Please enter referral address");
-      return;
+  const { mutateAsync, isPending, isSuccess, isError } =
+    useWriteContract();
+
+  const queryClient = useQueryClient();
+
+  const { data: blockNumber } = useBlockNumber({
+    watch: {
+      enabled: true,
+      pollingInterval: 5_000,
     }
+  });
 
+
+  const resultOfCheckAllowance = useCheckAllowance({
+    spenderAddress: DorsenForceContractAddress,
+    token: USDTAddress,
+  })
+
+
+
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "getUserInfo",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "isValidReferrer",
+        args: [address as Address, referralAddress as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+    ],
+
+  });
+
+  useEffect(() => {
+    if (resultOfCheckAllowance && address) {
+      const price = parseFloat("65");
+      const allowance = parseFloat(
+        formatEther?.(resultOfCheckAllowance.data ?? BigInt(0))
+      );
+      if (allowance >= price) {
+        setIsApprovedERC20(true);
+      } else {
+        setIsApprovedERC20(false);
+      }
+    }
+  }, [resultOfCheckAllowance, address]);
+
+  useEffect(() => {
+    if (!blockNumber) return;
+    queryClient.invalidateQueries({
+      queryKey: resultOfCheckAllowance.queryKey,
+    });
+    queryClient.invalidateQueries({
+      queryKey: result.queryKey,
+    });
+  }, [blockNumber, !result.queryKey, !resultOfCheckAllowance.queryKey]);
+
+  const joining = async () => {
     try {
-      setLoading(true);
+      const formattedAmount = parseUnits("65", 18);
+      const tokenAddress = USDTAddress;
 
-      // Yahan smart contract function call aayega
-      console.log("Amount:", 65);
-      console.log("Referral:", referral);
+      const res = await mutateAsync({
+        ...dorsenConfig,
+        functionName: "Joining",
+        args: [((referralAddress || communityAddress) as Address)],
+      });
 
-      // Example API call
-      // await joinDorsenForceContract(referral);
-
-      alert("Contract joined successfully!");
-    } catch (error) {
-      console.error(error);
-      alert("Transaction failed");
-    } finally {
-      setLoading(false);
+      if (res) {
+        toast.success("Joining completed");
+      }
+    } catch (error: any) {
+      console.log(">>>>>>>>>>>>.error", error);
+      toast.error(extractDetailsFromError(error.message as string) as string);
     }
   };
+
+
+  const approveToken = async () => {
+    try {
+      const formattedAmount = parseEther("65")
+      const res = await mutateAsync({
+        abi: erc20Abi,
+        address: USDTAddress,
+        functionName: "approve",
+        args: [DorsenForceContractAddress, formattedAmount],
+        account: address,
+      });
+      if (res) {
+        setIsApprovedERC20(true);
+        toast.success("USDT approved successfully");
+      }
+    } catch (error: any) {
+      toast.error(extractDetailsFromError(error.message as string) as string);
+    }
+  };
+
+  const { data: resultOfTokenBalance } = useReadContract({
+    abi: erc20Abi,
+    address: USDTAddress,
+    functionName: "balanceOf",
+    args: [address as Address],
+    account: address,
+    chainId: Number(chainId) ?? 99110,
+  });
+
+
   return (
     <div className="min-h-screen bg-black text-white py-5">
       {/* Background Effect */}
@@ -102,14 +167,14 @@ export default function DashboardPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-3xl font-bold">Rajesh Kumar</h2>
+                <h2 className="text-3xl font-bold">{stringTrimMiddle(address as Address)}</h2>
                 <span className="px-3 py-1 rounded-full border border-purple-500 text-purple-400 text-sm">
-                  Diamond
+                  Basic
                 </span>
               </div>
 
               <p className="text-gray-400">
-                @demouser • Member since 5 Apr 2026
+                • Member since 5 Apr 2026
               </p>
             </div>
           </div>
@@ -134,58 +199,101 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <motion.div
-           variants={fadeUp}
-          initial="hidden"           animate="show"
-        className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6"
+          variants={fadeUp}
+          initial="hidden" animate="show"
+          className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6"
         >
-          
-         <BalanceCard title={"Total Earnings"} token={"$4,820.50"} usd={"$4,820.50"}/>
-          <BalanceCard title={"Wallet Balance"} token={"$1,240.75"} usd={"$1,240.75"}/>
-           <BalanceCard title={"Direct Referrals"} token={"24"} usd={"24"}/>
-         <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Diamond"}/>
-         
-       </motion.div>
 
-       <div className="w-full  rounded-[24px] border border-purple-600/70 bg-black/60 p-6">
-      
+          <BalanceCard title={"Total Earnings"} token={"$4,820.50"} usd={"$4,820.50"} />
+          <BalanceCard title={"Wallet Balance"} token={"$1,240.75"} usd={"$1,240.75"} />
+          <BalanceCard title={"Direct Referrals"} token={"24"} usd={"24"} />
+          <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Diamond"} />
 
-      <div className="space-y-4">
-        <div>
-          <label className="mb-2 block text-gray-400">
-            Contract Amount
-          </label>
+        </motion.div>
 
-          <input
-            type="text"
-            value="$65"
-            readOnly
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-          />
+        <div className="w-full  rounded-[24px] border border-purple-600/70 bg-black/60 p-6">
+
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-gray-400">
+                Joining Amount
+              </label>
+
+              <input
+                type="text"
+                value="$65"
+                readOnly
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+              />
+            </div>
+
+            {referralAddress &&
+
+              <div>
+                <label className="mb-2 block text-gray-400">
+                  Sponsor Address
+                </label>
+
+                <input
+                  type="text"
+                  value={referralAddress}
+                  onChange={(e) => setReferralAddress(e.target.value)}
+                  placeholder="Enter sponsor wallet address"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+                />
+              </div>
+            }
+
+            {
+              address ? (
+                <button
+                  className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
+                  disabled={
+                    isPending ||
+                    Number(formatEther(BigInt(resultOfTokenBalance ?? 0))) < 65 ||
+                    Number(result?.data?.[0]?.result?.[0]) !== 0 ||
+                    (referralAddress !== '' && Boolean(result?.data?.[1]?.result) === false)
+                  }
+                  onClick={() => {
+                    !isAproveERC20 ? approveToken() : joining();
+
+                  }}
+                >
+                  {
+                    Number(result?.data?.[0]?.result?.[0]) !== 0
+                      ? "Thanks,You Already Joined Dorsen Force Army"
+                      :
+                      (
+                        isPending
+                          ? isAproveERC20
+                            ? "Joining..."
+                            : "Approving..."
+                          : (referralAddress && Boolean(result?.data?.[1]?.result) === false) ?
+                            "Invalid Sponsor"
+                            : (
+                              Number(
+                                formatEther(BigInt(resultOfTokenBalance ?? 0))
+                              ) < 65
+                            )
+                              ? "Insufficient fund"
+                              : isAproveERC20
+                                ? "Join Dorsen Force"
+                                : "Approve"
+                      )
+                  }
+                </button>
+              ) : (
+                <button
+                  className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
+                  onClick={async () => open()}
+                >
+                  Connect Wallet
+                </button>
+              )
+            }
+          </div>
         </div>
-
-        <div>
-          <label className="mb-2 block text-gray-400">
-            Referral Address
-          </label>
-
-          <input
-            type="text"
-            value={referral}
-            onChange={(e) => setReferral(e.target.value)}
-            placeholder="Enter referral wallet address"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-          />
-        </div>
-
-        <button
-          onClick={joinContract}
-          disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
-        >
-          {loading ? "Processing..." : "Join Now"}
-        </button>
-      </div>
-    </div>
 
         {/* Middle Section */}
         <div className="grid lg:grid-cols-2 gap-5">
@@ -198,17 +306,22 @@ export default function DashboardPage() {
             <div className="space-y-5">
               <IncomeRow
                 title="Direct Sponsor Income"
-                value="36%"
+                value="50%"
               />
 
               <IncomeRow
                 title="Autopool Matrix"
-                value="46%"
+                value="42%"
               />
 
               <IncomeRow
                 title="Diamond Autopool"
-                value="18%"
+                value="8%"
+              />
+
+              <IncomeRow
+                title="Elite Autopool"
+                value="10%"
               />
 
               <IncomeRow
@@ -311,6 +424,14 @@ export default function DashboardPage() {
             />
           </div>
         </div>
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: 0.3 }}
+        >
+          <ReferralCopy />
+        </motion.div>
       </div>
     </div>
   );

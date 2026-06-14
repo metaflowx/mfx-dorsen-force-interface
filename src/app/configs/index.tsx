@@ -1,6 +1,6 @@
 import { cookieStorage, createStorage, http } from '@wagmi/core'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { AppKitNetwork, bsc, bscTestnet,polygonAmoy} from '@reown/appkit/networks'
+import { AppKitNetwork, bsc, bscTestnet, polygonAmoy } from '@reown/appkit/networks'
 import { dorsenTestnet } from './chains/dorsenTestnet'
 import { dorsenMainnet } from './chains/dorsenMainnet'
 
@@ -14,7 +14,7 @@ if (!projectId) {
   throw new Error('Project ID is not defined')
 }
 
-export const networks = [dorsenTestnet,dorsenMainnet] as [AppKitNetwork, ...AppKitNetwork[]]
+export const networks = [dorsenTestnet, dorsenMainnet] as [AppKitNetwork, ...AppKitNetwork[]]
 
 //Set up the Wagmi Adapter (Config)
 export const wagmiAdapter = new WagmiAdapter({
@@ -25,8 +25,8 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
   transports: {
-    [dorsenMainnet.id]: http(dorsenMainnet.rpcUrls.default.http[0]),
-    [dorsenTestnet.id]: http(dorsenTestnet.rpcUrls.default.http[0])
+    [dorsenTestnet.id]: http(dorsenTestnet.rpcUrls.default.http[0]),
+    [dorsenMainnet.id]: http(dorsenMainnet.rpcUrls.default.http[0])
   },
 })
 

@@ -19,8 +19,8 @@ const levels = [
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
- };
+  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
 export default function DirectIncomePage() {
   return (
     <div className="py-5">
@@ -36,7 +36,7 @@ export default function DirectIncomePage() {
           <BalanceCard title={"Total Direct Earned"} token={"$68.33"} usd={"36% of joining amount"} />
           <BalanceCard title={"Direct Members"} token={"24"} usd={"All 10 levels open"} />
           <BalanceCard title={"Per Referral (L1)"} token={"$11.70"} usd={"50% of 36% of $65"} />
-         
+
 
         </motion.div>
 
@@ -56,7 +56,7 @@ export default function DirectIncomePage() {
         {/* Distribution Table */}
         <div className="rounded-[28px] border border-cyan-500 bg-black/90 p-6 md:p-8 w-[320px] sm:w-full">
           <h2 className="text-3xl md:text-5xl font-bold mb-8">
-            10-Level Distribution (36% of $65 = $23.40 total)
+            10-Level Distribution (50% of $65 = $32.5 total)
           </h2>
 
           <div className="overflow-x-auto">

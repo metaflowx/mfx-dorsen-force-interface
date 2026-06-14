@@ -128,7 +128,7 @@ export default function AutoPoolPage() {
             </span>{" "}
             Each position fills 2 sub-positions automatically.
             When both sub-positions are filled, you earn the
-            pool amount and cycle to the next level. 46% of
+            pool amount and cycle to the next level. 42% of
             joining amount ($65) is distributed across all
             10 pool levels.
           </p>
@@ -208,13 +208,12 @@ export default function AutoPoolPage() {
 
                     <td className="py-5 text-right">
                       <span
-                        className={`text-lg ${
-                          item.status === "Completed"
+                        className={`text-lg ${item.status === "Completed"
                             ? "text-emerald-400"
                             : item.status === "Active"
-                            ? "text-yellow-400"
-                            : "text-gray-400"
-                        }`}
+                              ? "text-yellow-400"
+                              : "text-gray-400"
+                          }`}
                       >
                         {item.status}
                       </span>

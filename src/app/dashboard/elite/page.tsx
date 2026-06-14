@@ -130,9 +130,9 @@ export default function DiamondPage() {
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
           <BalanceCard
-            title="Diamond Status"
-            token="Diamond"
-            usd="Eligible for Diamond Pool"
+            title="Elite Status"
+            token="Elite"
+            usd="Eligible for Elite Pool"
           />
 
           <BalanceCard
@@ -144,7 +144,7 @@ export default function DiamondPage() {
           <BalanceCard
             title="Pool Amount Earned"
             token="$2,000"
-            usd="18% income pool"
+            usd="10% income pool"
           />
         </motion.div>
 
@@ -156,10 +156,10 @@ export default function DiamondPage() {
           className="rounded-[28px] w-[320px] sm:w-full border border-cyan-500 bg-black/90 p-6 md:p-8"
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-8">
-            Diamond Autopool — 10 Pool Levels
+            Elite Autopool — 10 Pool Levels
             <span className="text-cyan-400">
               {" "}
-              (8% Distribution)
+              (10% Distribution)
             </span>
           </h2>
 
@@ -227,10 +227,10 @@ export default function DiamondPage() {
                     <td className="py-5 text-right">
                       <span
                         className={`text-lg ${item.status === "Done"
-                            ? "text-emerald-400"
-                            : item.status === "Active"
-                              ? "text-yellow-400"
-                              : "text-gray-400"
+                          ? "text-emerald-400"
+                          : item.status === "Active"
+                            ? "text-yellow-400"
+                            : "text-gray-400"
                           }`}
                       >
                         {item.status}
@@ -252,7 +252,7 @@ export default function DiamondPage() {
         >
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Diamond Pool Withdrawal Conditions
+              Elite Pool Withdrawal Conditions
             </h2>
 
             <p className="text-gray-400 text-lg">
@@ -268,8 +268,8 @@ export default function DiamondPage() {
               <div
                 key={item.pool}
                 className={`rounded-3xl border p-6 text-center transition-all hover:scale-[1.02] ${index < 4
-                    ? "border-cyan-500 bg-cyan-950/20"
-                    : "border-white/10 bg-black/80"
+                  ? "border-cyan-500 bg-cyan-950/20"
+                  : "border-white/10 bg-black/80"
                   }`}
               >
                 <p className="text-xl text-gray-300">

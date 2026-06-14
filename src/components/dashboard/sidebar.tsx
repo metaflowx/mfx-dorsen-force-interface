@@ -20,6 +20,7 @@ export default function Sidebar() {
         { label: "Direct Income", icon: <RiExchangeFundsFill size={20} />, href: "/dashboard/direct-income" },
         { label: "Autopool Matrix", icon: <GrTransaction size={20} />, href: "/dashboard/autopool" },
         { label: "Diamond Autopool", icon: <FaUsers size={20} />, href: "/dashboard/daimond" },
+        { label: "Elite Autopool", icon: <FaUsers size={20} />, href: "/dashboard/elite" },
         { label: "Leadership Bonus", icon: <HiUserCircle size={20} />, href: "/dashboard/leaderboard" },
         { label: "Withdraw", icon: <HiUserCircle size={20} />, href: "/dashboard/withdraw" },
         { label: "Profile", icon: <HiUserCircle size={20} />, href: "/dashboard/profile" },
