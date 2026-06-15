@@ -320,7 +320,7 @@ export default function DashboardPage() {
                   }}
                 >
                   {
-                    Number(result?.data?.[0]?.result?.[0]) !== 0
+                    Number(result?.data?.[0]?.result?.[0] ?? 0) !== 0
                       ? "Thanks,You Already Joined Dorsen Force Army"
                       :
                       (
