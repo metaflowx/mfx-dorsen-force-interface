@@ -7,7 +7,7 @@ const HeaderDashboard = () => {
     <>
       <div className="flex justify-center sm:justify-between items-center gap-3 flex-wrap ">
         <p className="text-[15px] text-center sm:text-start   text-white uppercase">
-          welcome to the future of Staking on Dorsen Chain
+        WELCOME TO THE DORSEN FORCE THE WEALTH MACHINE
         </p>
 
         <div className="flex items-center gap-2">
