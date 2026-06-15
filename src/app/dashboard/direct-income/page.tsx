@@ -134,7 +134,7 @@ export default function DirectIncomePage() {
                       {item.percent}%
                     </td>
 
-                    <DynamicData key={index} isLevel10Open={isLevel10Open} level={item.level} chainId={chainId as number} share={Number(item.percent)} address={address as Address} />
+                    <DynamicTableBodyData key={index} isLevel10Open={isLevel10Open} level={item.level} chainId={chainId as number} share={Number(item.percent)} address={address as Address} />
 
                   </tr>
                 ))}
@@ -166,7 +166,7 @@ export default function DirectIncomePage() {
   );
 }
 
-const DynamicData = ({
+const DynamicTableBodyData = ({
   level,
   address,
   chainId,

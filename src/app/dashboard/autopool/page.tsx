@@ -5,75 +5,76 @@ import BalanceCard from "@/components/dashboard/balanceCard";
 import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
 import { useAppKitNetwork } from "@reown/appkit/react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { Address, formatEther } from "viem";
-import { useConnection, useReadContracts } from "wagmi";
+import { useConnection, useReadContracts, useWriteContract } from "wagmi";
 
 const poolLevels = [
   {
-    level: "L-01",
+    level: "1",
     members: 2,
     amount: "$5",
     progress: 100,
     status: "Completed",
   },
   {
-    level: "L-02",
+    level: "2",
     members: 4,
     amount: "$10",
     progress: 100,
     status: "Completed",
   },
   {
-    level: "L-03",
+    level: "3",
     members: 8,
     amount: "$20",
     progress: 63,
     status: "Active",
   },
   {
-    level: "L-04",
+    level: "4",
     members: 16,
     amount: "$40",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-05",
+    level: "5",
     members: 32,
     amount: "$80",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-06",
+    level: "6",
     members: 64,
     amount: "$160",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-07",
+    level: "7",
     members: 128,
     amount: "$320",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-08",
+    level: "8",
     members: 256,
     amount: "$640",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-09",
+    level: "9",
     members: 512,
     amount: "$1,280",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-10",
+    level: "10",
     members: 1024,
     amount: "$2,560",
     progress: 0,
@@ -196,7 +197,7 @@ export default function AutoPoolPage() {
               </thead>
 
               <tbody>
-                {poolLevels.map((item) => (
+                {poolLevels.map((item, index) => (
                   <tr
                     key={item.level}
                     className="border-b border-white/10 hover:bg-white/[0.02]"
@@ -212,40 +213,14 @@ export default function AutoPoolPage() {
                     <td className="py-5 text-lg md:text-xl">
                       {item.amount}
                     </td>
+                    <DynamicTableBodyData
+                      key={index}
+                      level={Number(item.level)}
+                      chainId={chainId as number}
+                      minReq={Number(item.members)}
+                      address={address as Address}
+                    />
 
-                    <td className="py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-36 md:w-44 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-400 rounded-full"
-                            style={{
-                              width: `${item.progress}%`,
-                            }}
-                          />
-                        </div>
-
-                        <span className="text-lg">
-                          {item.progress}%
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-5">
-                      <span
-                        className={`text-lg ${item.status === "Completed"
-                          ? "text-emerald-400"
-                          : item.status === "Active"
-                            ? "text-yellow-400"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-
-                    <td className="text-right">
-                      <button className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50">Claim</button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -255,4 +230,127 @@ export default function AutoPoolPage() {
       </main>
     </div>
   );
+}
+
+
+const DynamicTableBodyData = ({
+  level,
+  address,
+  chainId,
+  minReq
+}: {
+  level: number;
+  address: Address;
+  chainId: number;
+  minReq: number;
+}) => {
+
+  const { mutateAsync, isPending } =
+    useWriteContract();
+
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "isMatrixLevelCompleted",
+        args: [address as Address, 1, level],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getSlotInfo",
+        args: [address as Address, 1],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "user2PoolClaimed",
+        args: [address as Address, 1],
+        chainId: Number(chainId) ?? 99110,
+      },
+
+
+    ],
+
+  });
+
+
+
+  const lastClaimedLevel = Number(result?.data?.[2]?.result?.[1] ?? 0)
+  const isCompleted = Boolean(result?.data?.[0]?.result);
+  const isClaimed = level <= lastClaimedLevel;
+  const isNextClaimable = level === lastClaimedLevel + 1;
+
+  const canClaim = isCompleted && isNextClaimable;
+
+  const current = Number(result?.data?.[1]?.result?.[2]?.[level] ?? 0);
+  const progress = Math.min((current / minReq) * 100, 100);
+  return (
+    <>
+
+      <td className="py-5">
+        <div className="flex items-center gap-4">
+          <div className="w-36 md:w-44 h-1.5 bg-white/20 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-400 rounded-full"
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+          </div>
+
+          <span className="text-lg">
+            {progress}%
+          </span>
+        </div>
+      </td>
+
+      <td className="py-5">
+        <span
+          className={`text-lg ${current === minReq
+            ? "text-emerald-400"
+            : current !== 0 && current < minReq
+              ? "text-yellow-400"
+              : "text-gray-400"
+            }`}
+        >
+          {
+            result?.data?.[1]?.result && result?.data?.[1]?.result?.[2]?.[level] === minReq ? "Completed"
+              : result?.data?.[1]?.result && result?.data?.[1]?.result?.[2][level] !== 0 && result?.data?.[1]?.result?.[2]?.[level] < minReq ? "Active" : "Pending"
+          }
+        </span>
+      </td>
+
+      <td className="text-right">
+        <button
+          disabled={
+            isPending ||
+            isClaimed ||
+            !canClaim
+          }
+          className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50"
+          onClick={async () => {
+            const res = await mutateAsync({
+              ...dorsenConfig,
+              functionName: "claimAutoPoolIncome",
+              args: [level],
+            });
+
+            if (res) {
+              toast.success("Autopool Claimed Successfully");
+            }
+          }}
+        >
+          {isPending
+            ? "Claiming..."
+            : isClaimed
+              ? "Claimed"
+              : canClaim
+                ? "Claim"
+                : `Claim L${lastClaimedLevel + 1} First`}
+        </button>
+      </td>
+    </>
+  );
+
 }
