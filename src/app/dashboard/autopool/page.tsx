@@ -101,11 +101,28 @@ export default function AutoPoolPage() {
         functionName: "getUserInfo",
         args: [address as Address],
         chainId: Number(chainId) ?? 99110,
-      }
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getSlotInfo",
+        args: [address as Address, 1],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "user2PoolClaimed",
+        args: [address as Address, 1],
+        chainId: Number(chainId) ?? 99110,
+      },
 
     ],
 
   });
+
+  const slotInfo = result?.data?.[1]?.result;
+  const lastClaimedLevel = Number(
+    result?.data?.[2]?.result?.[1] ?? 0
+  );
   return (
     <div className="py-5">
       <main className="space-y-6">
@@ -219,6 +236,8 @@ export default function AutoPoolPage() {
                       chainId={chainId as number}
                       minReq={Number(item.members)}
                       address={address as Address}
+                      lastClaimedLevel={lastClaimedLevel}
+                      slotInfo={slotInfo}
                     />
 
                   </tr>
@@ -237,12 +256,16 @@ const DynamicTableBodyData = ({
   level,
   address,
   chainId,
-  minReq
+  minReq,
+  lastClaimedLevel,
+  slotInfo,
 }: {
   level: number;
   address: Address;
   chainId: number;
   minReq: number;
+  lastClaimedLevel: number;
+  slotInfo: any;
 }) => {
 
   const { mutateAsync, isPending } =
@@ -256,19 +279,6 @@ const DynamicTableBodyData = ({
         args: [address as Address, 1, level],
         chainId: Number(chainId) ?? 99110,
       },
-      {
-        ...dorsenConfig,
-        functionName: "getSlotInfo",
-        args: [address as Address, 1],
-        chainId: Number(chainId) ?? 99110,
-      },
-      {
-        ...dorsenConfig,
-        functionName: "user2PoolClaimed",
-        args: [address as Address, 1],
-        chainId: Number(chainId) ?? 99110,
-      },
-
 
     ],
 
@@ -276,14 +286,15 @@ const DynamicTableBodyData = ({
 
 
 
-  const lastClaimedLevel = Number(result?.data?.[2]?.result?.[1] ?? 0)
   const isCompleted = Boolean(result?.data?.[0]?.result);
   const isClaimed = level <= lastClaimedLevel;
   const isNextClaimable = level === lastClaimedLevel + 1;
 
   const canClaim = isCompleted && isNextClaimable;
 
-  const current = Number(result?.data?.[1]?.result?.[2]?.[level] ?? 0);
+  const current = Number(
+    slotInfo?.[2]?.[level] ?? 0
+  )
   const progress = Math.min((current / minReq) * 100, 100);
   return (
     <>
@@ -315,8 +326,11 @@ const DynamicTableBodyData = ({
             }`}
         >
           {
-            result?.data?.[1]?.result && result?.data?.[1]?.result?.[2]?.[level] === minReq ? "Completed"
-              : result?.data?.[1]?.result && result?.data?.[1]?.result?.[2][level] !== 0 && result?.data?.[1]?.result?.[2]?.[level] < minReq ? "Active" : "Pending"
+            current === minReq
+              ? "Completed"
+              : current > 0
+                ? "Active"
+                : "Pending"
           }
         </span>
       </td>
