@@ -1,7 +1,12 @@
 "use client";
 
+import { dorsenConfig } from "@/app/constants/contract";
 import BalanceCard from "@/components/dashboard/balanceCard";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
+import { useAppKitNetwork } from "@reown/appkit/react";
 import { motion } from "framer-motion";
+import { Address, formatEther } from "viem";
+import { useConnection, useReadContracts } from "wagmi";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -16,109 +21,123 @@ const diamondPools = [
   {
     level: "L-01",
     members: 2,
-    amount: "$2,000",
-    points: "5P",
-    withdraw: "5 directs",
+    amount: "$50",
+    points: "0P",
+    withdraw: "0 directs",
     progress: 100,
     status: "Done",
   },
   {
     level: "L-02",
     members: 4,
-    amount: "$4,000",
-    points: "10P",
-    withdraw: "11 directs",
+    amount: "$100",
+    points: "0P",
+    withdraw: "0 directs",
     progress: 50,
     status: "Active",
   },
   {
     level: "L-03",
     members: 8,
-    amount: "$8,000",
-    points: "15P",
-    withdraw: "15 directs",
+    amount: "$200",
+    points: "0P",
+    withdraw: "0 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-04",
     members: 16,
-    amount: "$16,000",
-    points: "20P",
-    withdraw: "21 directs",
+    amount: "$500",
+    points: "1P",
+    withdraw: "1 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-05",
     members: 32,
-    amount: "$32,000",
-    points: "50P",
-    withdraw: "51 directs",
+    amount: "$1000",
+    points: "2P",
+    withdraw: "2 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-06",
     members: 64,
-    amount: "$64,000",
-    points: "100P",
-    withdraw: "101 directs",
+    amount: "$2000",
+    points: "4P",
+    withdraw: "4 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-07",
     members: 128,
-    amount: "$128,000",
-    points: "200P",
-    withdraw: "201 directs",
+    amount: "$5000",
+    points: "8P",
+    withdraw: "8 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-08",
     members: 256,
-    amount: "$256,000",
-    points: "400P",
-    withdraw: "401 directs",
+    amount: "$10,000",
+    points: "20P",
+    withdraw: "20 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-09",
     members: 512,
-    amount: "$512,000",
-    points: "800P",
-    withdraw: "1024 directs",
+    amount: "$20,000",
+    points: "50P",
+    withdraw: "50 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-10",
     members: 1024,
-    amount: "$1,024,000",
-    points: "2000P",
-    withdraw: "2048 directs",
+    amount: "$100,000",
+    points: "1000P",
+    withdraw: "1000 directs",
     progress: 0,
     status: "Pending",
   },
 ];
 
 const withdrawalConditions = [
-  { pool: 1, directs: 5 },
-  { pool: 2, directs: 11 },
-  { pool: 3, directs: 15 },
-  { pool: 4, directs: 21 },
-  { pool: 5, directs: 51 },
-  { pool: 6, directs: 101 },
-  { pool: 7, directs: 201 },
-  { pool: 8, directs: 401 },
-  { pool: 9, directs: 1024 },
-  { pool: 10, directs: 2048 },
+  { pool: 1, directs: 0 },
+  { pool: 2, directs: 0 },
+  { pool: 3, directs: 0 },
+  { pool: 4, directs: 1 },
+  { pool: 5, directs: 2 },
+  { pool: 6, directs: 4 },
+  { pool: 7, directs: 8 },
+  { pool: 8, directs: 20 },
+  { pool: 9, directs: 50 },
+  { pool: 10, directs: 1000 },
 ];
 
-export default function DiamondPage() {
+export default function ElitePage() {
+  const { chainId } = useAppKitNetwork()
+  const { address } = useConnection()
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "getUserInfo",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      }
+
+    ],
+
+  });
   return (
     <div className="py-5">
       <main className="space-y-6">
@@ -137,13 +156,16 @@ export default function DiamondPage() {
 
           <BalanceCard
             title="Points Earned"
-            token="5P"
+            token={
+              `${result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7] : 0}P
+              `
+            }
             usd="From completed pools"
           />
 
           <BalanceCard
-            title="Pool Amount Earned"
-            token="$2,000"
+            title="Elite Pool Earned"
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[0]?.result?.[4] ?? 0))))}
             usd="10% income pool"
           />
         </motion.div>
@@ -175,8 +197,11 @@ export default function DiamondPage() {
                     Withdrawal Req.
                   </th>
                   <th className="pb-5 font-medium">Progress</th>
-                  <th className="pb-5 font-medium text-right">
+                  <th className="pb-5 font-medium">
                     Status
+                  </th>
+                  <th className="pb-5 font-medium text-right">
+                    Action
                   </th>
                 </tr>
               </thead>
@@ -224,7 +249,7 @@ export default function DiamondPage() {
                       </div>
                     </td>
 
-                    <td className="py-5 text-right">
+                    <td className="py-5">
                       <span
                         className={`text-lg ${item.status === "Done"
                           ? "text-emerald-400"
@@ -235,6 +260,10 @@ export default function DiamondPage() {
                       >
                         {item.status}
                       </span>
+                    </td>
+
+                    <td className="text-right">
+                      <button className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50">Claim</button>
                     </td>
                   </tr>
                 ))}

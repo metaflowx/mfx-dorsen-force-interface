@@ -34,7 +34,7 @@ const diamondPools = [
   {
     level: "L-03",
     members: 8,
-    amount: "$8,000",
+    amount: "$4,000",
     points: "15P",
     withdraw: "15 directs",
     progress: 0,
@@ -43,7 +43,7 @@ const diamondPools = [
   {
     level: "L-04",
     members: 16,
-    amount: "$16,000",
+    amount: "$6,000",
     points: "20P",
     withdraw: "21 directs",
     progress: 0,
@@ -52,8 +52,8 @@ const diamondPools = [
   {
     level: "L-05",
     members: 32,
-    amount: "$32,000",
-    points: "50P",
+    amount: "$12,000",
+    points: "40P",
     withdraw: "51 directs",
     progress: 0,
     status: "Pending",
@@ -61,8 +61,8 @@ const diamondPools = [
   {
     level: "L-06",
     members: 64,
-    amount: "$64,000",
-    points: "100P",
+    amount: "$25,000",
+    points: "50P",
     withdraw: "101 directs",
     progress: 0,
     status: "Pending",
@@ -70,35 +70,35 @@ const diamondPools = [
   {
     level: "L-07",
     members: 128,
-    amount: "$128,000",
-    points: "200P",
-    withdraw: "201 directs",
+    amount: "$50_000",
+    points: "100P",
+    withdraw: "100 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-08",
     members: 256,
-    amount: "$256,000",
-    points: "400P",
-    withdraw: "401 directs",
+    amount: "$100,000",
+    points: "200P",
+    withdraw: "200 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-09",
     members: 512,
-    amount: "$512,000",
-    points: "800P",
-    withdraw: "1024 directs",
+    amount: "$200_000",
+    points: "500P",
+    withdraw: "500 directs",
     progress: 0,
     status: "Pending",
   },
   {
     level: "L-10",
     members: 1024,
-    amount: "$1,024,000",
-    points: "2000P",
+    amount: "$400,000",
+    points: "1000P",
     withdraw: "2048 directs",
     progress: 0,
     status: "Pending",
@@ -107,15 +107,15 @@ const diamondPools = [
 
 const withdrawalConditions = [
   { pool: 1, directs: 5 },
-  { pool: 2, directs: 11 },
+  { pool: 2, directs: 10 },
   { pool: 3, directs: 15 },
-  { pool: 4, directs: 21 },
-  { pool: 5, directs: 51 },
-  { pool: 6, directs: 101 },
-  { pool: 7, directs: 201 },
-  { pool: 8, directs: 401 },
-  { pool: 9, directs: 1024 },
-  { pool: 10, directs: 2048 },
+  { pool: 4, directs: 20 },
+  { pool: 5, directs: 40 },
+  { pool: 6, directs: 50 },
+  { pool: 7, directs: 100 },
+  { pool: 8, directs: 200 },
+  { pool: 9, directs: 500 },
+  { pool: 10, directs: 1000 },
 ];
 
 export default function DiamondPage() {
@@ -175,8 +175,12 @@ export default function DiamondPage() {
                     Withdrawal Req.
                   </th>
                   <th className="pb-5 font-medium">Progress</th>
-                  <th className="pb-5 font-medium text-right">
+                  <th className="pb-5 font-medium">
                     Status
+                  </th>
+
+                  <th className="pb-5 font-medium text-right">
+                    Action
                   </th>
                 </tr>
               </thead>
@@ -224,17 +228,21 @@ export default function DiamondPage() {
                       </div>
                     </td>
 
-                    <td className="py-5 text-right">
+                    <td className="py-5">
                       <span
                         className={`text-lg ${item.status === "Done"
-                            ? "text-emerald-400"
-                            : item.status === "Active"
-                              ? "text-yellow-400"
-                              : "text-gray-400"
+                          ? "text-emerald-400"
+                          : item.status === "Active"
+                            ? "text-yellow-400"
+                            : "text-gray-400"
                           }`}
                       >
                         {item.status}
                       </span>
+                    </td>
+
+                    <td className="text-right">
+                      <button className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50">Claim</button>
                     </td>
                   </tr>
                 ))}
@@ -268,8 +276,8 @@ export default function DiamondPage() {
               <div
                 key={item.pool}
                 className={`rounded-3xl border p-6 text-center transition-all hover:scale-[1.02] ${index < 4
-                    ? "border-cyan-500 bg-cyan-950/20"
-                    : "border-white/10 bg-black/80"
+                  ? "border-cyan-500 bg-cyan-950/20"
+                  : "border-white/10 bg-black/80"
                   }`}
               >
                 <p className="text-xl text-gray-300">

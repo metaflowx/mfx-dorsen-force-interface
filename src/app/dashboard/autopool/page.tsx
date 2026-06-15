@@ -1,7 +1,12 @@
 "use client";
 
+import { dorsenConfig } from "@/app/constants/contract";
 import BalanceCard from "@/components/dashboard/balanceCard";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
+import { useAppKitNetwork } from "@reown/appkit/react";
 import { motion } from "framer-motion";
+import { Address, formatEther } from "viem";
+import { useConnection, useReadContracts } from "wagmi";
 
 const poolLevels = [
   {
@@ -86,6 +91,20 @@ const fadeUp = {
 };
 
 export default function AutoPoolPage() {
+  const { chainId } = useAppKitNetwork()
+  const { address } = useConnection()
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "getUserInfo",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      }
+
+    ],
+
+  });
   return (
     <div className="py-5">
       <main className="space-y-6">
@@ -98,7 +117,7 @@ export default function AutoPoolPage() {
         >
           <BalanceCard
             title="Autopool Earned"
-            token="$15"
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[0]?.result?.[2] ?? 0))))}
             usd="2 levels completed"
           />
 
@@ -165,8 +184,13 @@ export default function AutoPoolPage() {
                     Progress
                   </th>
 
-                  <th className="pb-5 font-medium text-right">
+                  <th className="pb-5 font-medium">
                     Status
+                  </th>
+
+
+                  <th className="pb-5 font-medium text-right">
+                    Action
                   </th>
                 </tr>
               </thead>
@@ -206,17 +230,21 @@ export default function AutoPoolPage() {
                       </div>
                     </td>
 
-                    <td className="py-5 text-right">
+                    <td className="py-5">
                       <span
                         className={`text-lg ${item.status === "Completed"
-                            ? "text-emerald-400"
-                            : item.status === "Active"
-                              ? "text-yellow-400"
-                              : "text-gray-400"
+                          ? "text-emerald-400"
+                          : item.status === "Active"
+                            ? "text-yellow-400"
+                            : "text-gray-400"
                           }`}
                       >
                         {item.status}
                       </span>
+                    </td>
+
+                    <td className="text-right">
+                      <button className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50">Claim</button>
                     </td>
                   </tr>
                 ))}
