@@ -87,9 +87,9 @@ export default function Header() {
         {/* ================= DESKTOP AUTH BUTTONS ================= */}
         <div className="hidden lg:block">
 
-        <Link href={"/dashboard"}>
-        <button
-            className="
+          <Link href={"/dashboard"}>
+            <button
+              className="
     relative overflow-hidden
     px-6 py-3
     cursor-pointer
@@ -103,10 +103,10 @@ export default function Header() {
     before:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.55),transparent_35%)]
     before:pointer-events-none
   "
-          >
-            JOIN NOW
-          </button>
-        </Link>
+            >
+              JOIN NOW
+            </button>
+          </Link>
         </div>
 
         {/* ================= HAMBURGER ================= */}

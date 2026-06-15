@@ -3,6 +3,7 @@
 import "@/app/hero.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 50 },
@@ -91,9 +92,11 @@ export default function HeroSection() {
 
           {/* Buttons */}
           <div className="cursor-pointer mt-5 flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
-            <button className="px-8 py-3 rounded-full border border-[#4DA9FF] text-[#00A1FF] font-bold text-lg hover:bg-[#081A33] transition-all duration-300">
-              GET STARTED
-            </button>
+            <Link href={"/dashboard"}>
+              <button className="px-8 py-3 rounded-full border border-[#4DA9FF] text-[#00A1FF] font-bold text-lg hover:bg-[#081A33] transition-all duration-300">
+                GET STARTED
+              </button>
+            </Link>
 
             <button
               className="
@@ -115,7 +118,7 @@ export default function HeroSection() {
 
 
       <div className="m-auto w-75 sm:w-120">
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-6 mt-12 justify-center">
 
           <motion.div
