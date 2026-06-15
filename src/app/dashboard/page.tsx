@@ -311,7 +311,7 @@ export default function DashboardPage() {
                   disabled={
                     isPending ||
                     Number(formatEther(BigInt(resultOfTokenBalance ?? 0))) < 65 ||
-                    Number(result?.data?.[0]?.result?.[0]) !== 0 ||
+                    Number(result?.data?.[0]?.result?.[0] ?? 0) !== 0 ||
                     (referralAddress !== '' && Boolean(result?.data?.[1]?.result) === false)
                   }
                   onClick={() => {
