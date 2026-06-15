@@ -1,7 +1,13 @@
 "use client";
 
+import { dorsenConfig } from "@/app/constants/contract";
 import BalanceCard from "@/components/dashboard/balanceCard";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
+import { useAppKitNetwork } from "@reown/appkit/react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { Address, formatEther } from "viem";
+import { useConnection, useReadContracts, useWriteContract } from "wagmi";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -14,111 +20,142 @@ const fadeUp = {
 
 const diamondPools = [
   {
-    level: "L-01",
+    level: "1",
     members: 2,
-    amount: "$2,000",
-    points: "5P",
-    withdraw: "5 directs",
+    amount: "$50",
+    points: "0P",
+    withdraw: "0",
     progress: 100,
     status: "Done",
   },
   {
-    level: "L-02",
+    level: "2",
     members: 4,
-    amount: "$4,000",
-    points: "10P",
-    withdraw: "11 directs",
+    amount: "$100",
+    points: "0P",
+    withdraw: "0",
     progress: 50,
     status: "Active",
   },
   {
-    level: "L-03",
+    level: "3",
     members: 8,
-    amount: "$4,000",
-    points: "15P",
-    withdraw: "15 directs",
+    amount: "$200",
+    points: "0P",
+    withdraw: "0",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-04",
+    level: "4",
     members: 16,
-    amount: "$6,000",
-    points: "20P",
-    withdraw: "21 directs",
+    amount: "$500",
+    points: "1P",
+    withdraw: "1",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-05",
+    level: "5",
     members: 32,
-    amount: "$12,000",
-    points: "40P",
-    withdraw: "51 directs",
+    amount: "$1000",
+    points: "2P",
+    withdraw: "2",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-06",
+    level: "6",
     members: 64,
-    amount: "$25,000",
-    points: "50P",
-    withdraw: "101 directs",
+    amount: "$2000",
+    points: "4P",
+    withdraw: "4",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-07",
+    level: "7",
     members: 128,
-    amount: "$50_000",
-    points: "100P",
-    withdraw: "100 directs",
+    amount: "$5000",
+    points: "8P",
+    withdraw: "8",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-08",
+    level: "8",
     members: 256,
-    amount: "$100,000",
-    points: "200P",
-    withdraw: "200 directs",
+    amount: "$10,000",
+    points: "20P",
+    withdraw: "20",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-09",
+    level: "9",
     members: 512,
-    amount: "$200_000",
-    points: "500P",
-    withdraw: "500 directs",
+    amount: "$20,000",
+    points: "50P",
+    withdraw: "50",
     progress: 0,
     status: "Pending",
   },
   {
-    level: "L-10",
+    level: "10",
     members: 1024,
-    amount: "$400,000",
+    amount: "$100,000",
     points: "1000P",
-    withdraw: "2048 directs",
+    withdraw: "1000",
     progress: 0,
     status: "Pending",
   },
 ];
 
 const withdrawalConditions = [
-  { pool: 1, directs: 5 },
-  { pool: 2, directs: 10 },
-  { pool: 3, directs: 15 },
-  { pool: 4, directs: 20 },
-  { pool: 5, directs: 40 },
-  { pool: 6, directs: 50 },
-  { pool: 7, directs: 100 },
-  { pool: 8, directs: 200 },
-  { pool: 9, directs: 500 },
+  { pool: 1, directs: 0 },
+  { pool: 2, directs: 0 },
+  { pool: 3, directs: 0 },
+  { pool: 4, directs: 1 },
+  { pool: 5, directs: 2 },
+  { pool: 6, directs: 4 },
+  { pool: 7, directs: 8 },
+  { pool: 8, directs: 20 },
+  { pool: 9, directs: 50 },
   { pool: 10, directs: 1000 },
 ];
 
 export default function DiamondPage() {
+  const { chainId } = useAppKitNetwork()
+  const { address } = useConnection()
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "getUserInfo",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getSlotInfo",
+        args: [address as Address, 2],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "user2PoolClaimed",
+        args: [address as Address, 2],
+        chainId: Number(chainId) ?? 99110,
+      },
+
+    ],
+
+  });
+
+  const slotInfo = result?.data?.[1]?.result;
+  const lastClaimedLevel = Number(
+    result?.data?.[2]?.result?.[1] ?? 0
+  );
   return (
     <div className="py-5">
       <main className="space-y-6">
@@ -131,20 +168,25 @@ export default function DiamondPage() {
         >
           <BalanceCard
             title="Diamond Status"
-            token="Diamond"
+            token={
+              Number(slotInfo?.[1] ?? 0) === 1 ? "Diamond" : "None"
+            }
             usd="Eligible for Diamond Pool"
           />
 
           <BalanceCard
             title="Points Earned"
-            token="5P"
+            token={
+              `${result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7] : 0}P
+              `
+            }
             usd="From completed pools"
           />
 
           <BalanceCard
-            title="Pool Amount Earned"
-            token="$2,000"
-            usd="18% income pool"
+            title="Diamond Pool Earned"
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[0]?.result?.[4] ?? 0))))}
+            usd="10% income pool"
           />
         </motion.div>
 
@@ -167,7 +209,7 @@ export default function DiamondPage() {
             <table className="w-full min-w-[600px] ">
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
-                  <th className="pb-5 font-medium">Pool</th>
+                  <th className="pb-5 font-medium">Pool Level</th>
                   <th className="pb-5 font-medium">Members</th>
                   <th className="pb-5 font-medium">Pool Amount</th>
                   <th className="pb-5 font-medium">Points</th>
@@ -178,7 +220,6 @@ export default function DiamondPage() {
                   <th className="pb-5 font-medium">
                     Status
                   </th>
-
                   <th className="pb-5 font-medium text-right">
                     Action
                   </th>
@@ -186,7 +227,7 @@ export default function DiamondPage() {
               </thead>
 
               <tbody>
-                {diamondPools.map((item) => (
+                {diamondPools.map((item, index) => (
                   <tr
                     key={item.level}
                     className="border-b border-white/10 hover:bg-white/[0.02]"
@@ -208,42 +249,18 @@ export default function DiamondPage() {
                     </td>
 
                     <td className="py-5 text-lg">
-                      {item.withdraw}
+                      {item.withdraw} directs
                     </td>
-
-                    <td className="py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-36 md:w-44 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-400 rounded-full"
-                            style={{
-                              width: `${item.progress}%`,
-                            }}
-                          />
-                        </div>
-
-                        <span className="text-lg">
-                          {item.progress}%
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-5">
-                      <span
-                        className={`text-lg ${item.status === "Done"
-                          ? "text-emerald-400"
-                          : item.status === "Active"
-                            ? "text-yellow-400"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-
-                    <td className="text-right">
-                      <button className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50">Claim</button>
-                    </td>
+                    <DynamicTableBodyData
+                      key={index}
+                      level={Number(item.level)}
+                      chainId={chainId as number}
+                      minReq={Number(item.members)}
+                      withdrawReq={Number(item.withdraw)}
+                      address={address as Address}
+                      lastClaimedLevel={lastClaimedLevel}
+                      slotInfo={slotInfo}
+                    />
                   </tr>
                 ))}
               </tbody>
@@ -298,4 +315,134 @@ export default function DiamondPage() {
       </main>
     </div>
   );
+}
+
+const DynamicTableBodyData = ({
+  level,
+  address,
+  chainId,
+  minReq,
+  withdrawReq,
+  lastClaimedLevel,
+  slotInfo,
+}: {
+  level: number;
+  address: Address;
+  chainId: number;
+  minReq: number;
+  withdrawReq: number;
+  lastClaimedLevel: number;
+  slotInfo: any;
+}) => {
+
+  const { mutateAsync, isPending } =
+    useWriteContract();
+
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "isMatrixLevelCompleted",
+        args: [address as Address, 2, level],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "isDiamondPoolClaimable",
+        args: [address as Address, BigInt(withdrawReq)],
+        chainId: Number(chainId) ?? 99110,
+      },
+
+    ],
+
+  });
+
+
+
+  const isCompleted = Boolean(result?.data?.[0]?.result);
+  const isClaimed = level <= lastClaimedLevel;
+  const isNextClaimable = level === lastClaimedLevel + 1;
+  const isDiamondPoolClaimable = Boolean(result?.data?.[1]?.result)
+
+  const canClaim = isCompleted && isDiamondPoolClaimable && isNextClaimable;
+
+  const current = Number(
+    slotInfo?.[2]?.[level] ?? 0
+  )
+  const progress = Math.min((current / minReq) * 100, 100);
+  return (
+    <>
+
+      <td className="py-5">
+        <div className="flex items-center gap-4">
+          <div className="w-36 md:w-44 h-1.5 bg-white/20 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-400 rounded-full"
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+          </div>
+
+          <span className="text-lg">
+            {progress}%
+          </span>
+        </div>
+      </td>
+
+      <td className="py-5">
+        <span
+          className={`text-lg ${current === minReq
+            ? "text-emerald-400"
+            : current !== 0 && current < minReq
+              ? "text-yellow-400"
+              : "text-gray-400"
+            }`}
+        >
+          {
+            current === minReq
+              ? "Completed"
+              : current > 0
+                ? "Active"
+                : "Pending"
+          }
+        </span>
+      </td>
+
+      <td className="text-right">
+        <button
+          disabled={
+            isPending ||
+            isClaimed ||
+            !canClaim
+          }
+          className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-2 font-semibold text-white disabled:opacity-50"
+          onClick={async () => {
+            const res = await mutateAsync({
+              ...dorsenConfig,
+              functionName: "claimDiamondAutoPoolIncome",
+              args: [level],
+            });
+
+            if (res) {
+              toast.success("Diamond Autopool Claimed Successfully");
+            }
+          }}
+        >
+          {isPending
+            ? "Claiming..."
+            : isClaimed
+              ? "Claimed"
+              : !isCompleted
+                ? "Pool Not Completed"
+                : !isDiamondPoolClaimable
+                  ? `${withdrawReq} Directs Required`
+                  : !isNextClaimable
+                    ? `Claim L${lastClaimedLevel + 1} First`
+                    : "Claim"}
+        </button>
+      </td>
+    </>
+  );
+
 }
