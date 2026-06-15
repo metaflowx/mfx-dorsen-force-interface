@@ -4,6 +4,13 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import BalanceCard from "@/components/dashboard/balanceCard";
 import { Copy, LogOut } from "lucide-react";
+import { useConnection, useReadContracts } from "wagmi";
+import { Address, formatEther, zeroAddress } from "viem";
+import { toast } from "sonner";
+import { stringTrimMiddle } from "@/libs/stringTrimMiddle";
+import { useAppKitNetwork } from "@reown/appkit/react";
+import { dorsenConfig } from "@/app/constants/contract";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,10 +22,30 @@ const fadeUp = {
 };
 
 export default function ProfilePage() {
-  const walletAddress = "0x39deb3.....e2ac64rd";
+  const { chainId } = useAppKitNetwork()
+  const { address } = useConnection()
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "getUserInfo",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getUserTotalEarnings",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      }
+    ],
+
+  });
+
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(walletAddress);
+    navigator.clipboard.writeText(address as Address);
+    toast.success("Copy Address Successfully")
   };
 
   return (
@@ -29,29 +56,31 @@ export default function ProfilePage() {
           variants={fadeUp}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
         >
           <BalanceCard
             title="Your Referrals"
-            token="0"
+            token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7].toString() : "0"}
             usd=""
           />
 
           <BalanceCard
             title="Your Referral Earning"
-            token="0.00 DF"
+            token={
+              `
+              $${convertToAbbreviated(
+                Number(formatEther(BigInt(result?.data?.[1]?.result?.[4] ?? 0))) +
+                Number(formatEther(BigInt(result?.data?.[1]?.result?.[5] ?? 0)))
+              )}
+              `
+            }
             usd=""
           />
-
-          <BalanceCard
-            title="Your Referral Claimed"
-            token="0.00 DF"
-            usd=""
-          />
-
           <BalanceCard
             title="Your Referral By"
-            token="--"
+            token={stringTrimMiddle(
+              result?.data?.[0]?.result?.[1] ? result?.data?.[0]?.result?.[1].toString() : zeroAddress
+            )}
             usd=""
           />
         </motion.div>
@@ -74,14 +103,14 @@ export default function ProfilePage() {
                 <img
                   src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e"
                   alt="Profile"
-                   
+
                   className="object-cover"
                 />
               </div>
 
               <div className="flex items-center gap-3">
                 <p className="text-2xl md:text-3xl">
-                  {walletAddress}
+                  {stringTrimMiddle(address as Address ?? zeroAddress)}
                 </p>
 
                 <button
@@ -91,14 +120,6 @@ export default function ProfilePage() {
                   <Copy size={24} />
                 </button>
               </div>
-            </div>
-
-            {/* Logout Button */}
-            <div>
-              <button className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 text-white text-xl font-medium shadow-lg hover:scale-105 transition flex items-center gap-3">
-                <LogOut size={22} />
-                Logout
-              </button>
             </div>
           </div>
         </motion.div>

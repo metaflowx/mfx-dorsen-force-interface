@@ -1,7 +1,14 @@
 "use client";
 
+import { dorsenConfig, USDTAddress } from "@/app/constants/contract";
 import BalanceCard from "@/components/dashboard/balanceCard";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
+import { useAppKitNetwork } from "@reown/appkit/react";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
+import { Address, erc20Abi, formatEther } from "viem";
+import { useConnection, useReadContract } from "wagmi";
+import moment from "moment";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -12,37 +19,96 @@ const fadeUp = {
   },
 };
 
-const withdrawalHistory = [
-  {
-    incomeType: "Direct Income",
-    requested: "$200.00",
-    fee: "-$40.00",
-    net: "$160.00",
-    status: "Paid",
-    date: "30 Apr 2026",
-    processed: "2 May 2026",
-  },
-  {
-    incomeType: "Autopool Matrix",
-    requested: "$500.00",
-    fee: "-$100.00",
-    net: "$400.00",
-    status: "Approved",
-    date: "20 May 2026",
-    processed: "22 May 2026",
-  },
-  {
-    incomeType: "Leadership Bonus",
-    requested: "$150.00",
-    fee: "-$30.00",
-    net: "$120.00",
-    status: "Pending",
-    date: "28 May 2026",
-    processed: "-",
-  },
-];
 
 export default function WithdrawalPage() {
+  const { chainId } = useAppKitNetwork()
+  const { address } = useConnection()
+
+  const totalTxHistoryLenth = useReadContract({
+    ...dorsenConfig,
+    functionName: "totalTxHistoryLengthForUser",
+    args: [address as Address],
+  });
+
+  const resultTxHistoryList = useReadContract({
+    ...dorsenConfig,
+    functionName: "user2TxHistoryList",
+    args: [address as Address, BigInt(0), BigInt(totalTxHistoryLenth?.data || 0)],
+  });
+
+  const { data: resultOfTokenBalance } = useReadContract({
+    abi: erc20Abi,
+    address: USDTAddress,
+    functionName: "balanceOf",
+    args: [address as Address],
+    account: address,
+    chainId: Number(chainId) ?? 99110
+  });
+
+  const totalUserEarnings = useReadContract({
+    ...dorsenConfig,
+    functionName: "getUserTotalEarnings",
+    args: [address as Address],
+    chainId: Number(chainId) ?? 99110
+  });
+
+  const latestWithdrawals = useMemo(() => {
+    const txs = resultTxHistoryList?.data || [];
+
+    return [...txs]
+      .slice(-10) /// last 15 records
+      .reverse(); /// newest first
+  }, [resultTxHistoryList?.data]);
+
+
+  const withdrawalStats = useMemo(() => {
+    const data = totalUserEarnings.data;
+
+    if (!data) {
+      return {
+        totalWithdraw: 0,
+        adminFee: 0,
+        totalReceived: 0,
+      };
+    }
+
+    const totalWithdraw =
+      Number(formatEther(data[0])) +
+      Number(formatEther(data[1])) +
+      Number(formatEther(data[2])) +
+      Number(formatEther(data[3]));
+
+    const adminFee = totalWithdraw * 0.2;
+    const totalReceived = totalWithdraw - adminFee;
+
+    return {
+      totalWithdraw,
+      adminFee,
+      totalReceived,
+    };
+  }, [totalUserEarnings.data]);
+
+  const withdrawalSummary = useMemo(() => {
+    const txs = latestWithdrawals || [];
+
+    const totalRequested = txs.reduce(
+      (sum: number, tx: any) =>
+        sum +
+        Number(formatEther(BigInt(tx?.amount ?? 0))),
+      0
+    );
+
+    const totalFees = totalRequested * 0.2;
+
+    const netReceived = totalRequested - totalFees;
+
+    return {
+      totalRequested,
+      totalFees,
+      netReceived,
+    };
+  }, [latestWithdrawals]);
+
   return (
     <div className="py-5">
       <main className="space-y-6">
@@ -55,25 +121,33 @@ export default function WithdrawalPage() {
         >
           <BalanceCard
             title="Wallet Balance"
-            token="$1240.75"
+            token={
+              convertToAbbreviated(Number(formatEther(BigInt(resultOfTokenBalance ?? 0))))
+            }
             usd="Available for withdrawal"
           />
 
           <BalanceCard
             title="Total Withdraw"
-            token="$850.00"
+            token={
+              `$${convertToAbbreviated(withdrawalStats.totalWithdraw)}`
+            }
             usd="3 requests made"
           />
 
           <BalanceCard
             title="Admin Fees Paid"
-            token="$170.00"
+            token={
+              `$${convertToAbbreviated(withdrawalStats.adminFee)}`
+            }
             usd="20% LDF fee on all withdrawals"
           />
 
           <BalanceCard
             title="Total Received (USDT)"
-            token="$160.00"
+            token={
+              `$${convertToAbbreviated(withdrawalStats.totalReceived)}`
+            }
             usd="Net amount after fees"
           />
         </motion.div>
@@ -121,58 +195,69 @@ export default function WithdrawalPage() {
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
                   <th className="pb-5">Income Type</th>
-                  <th className="pb-5">Requested</th>
+                  <th className="pb-5">Amount</th>
                   <th className="pb-5">Fee (20%)</th>
                   <th className="pb-5">Net (USDT)</th>
                   <th className="pb-5">Status</th>
-                  <th className="pb-5">Date</th>
-                  <th className="pb-5 text-right">Processed</th>
+                  <th className="pb-5 text-right">Date</th>
                 </tr>
               </thead>
 
               <tbody>
-                {withdrawalHistory.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-white/10 hover:bg-white/[0.02]"
-                  >
-                    <td className="py-6 text-xl">
-                      {item.incomeType}
-                    </td>
+                {latestWithdrawals.length > 0 ? (
+                  latestWithdrawals.map((tx: any, index) => {
+                    const amount = Number(
+                      formatEther(BigInt(tx?.amount ?? 0))
+                    );
 
-                    <td className="py-6 text-xl">
-                      {item.requested}
-                    </td>
+                    const fee = amount * 0.2;
+                    const net = amount - fee;
 
-                    <td className="py-6 text-xl text-red-500">
-                      {item.fee}
-                    </td>
-
-                    <td className="py-6 text-xl text-emerald-400">
-                      {item.net}
-                    </td>
-
-                    <td className="py-6">
-                      <span
-                        className={`text-xl ${
-                          item.status === "Pending"
-                            ? "text-yellow-400"
-                            : "text-emerald-400"
-                        }`}
+                    return (
+                      <tr
+                        key={index}
+                        className="border-b border-white/10 hover:bg-white/[0.02]"
                       >
-                        {item.status}
-                      </span>
-                    </td>
+                        <td className="py-6 text-xl">
+                          {tx?.incomeType || "Withdrawal"}
+                        </td>
 
-                    <td className="py-6 text-xl">
-                      {item.date}
-                    </td>
+                        <td className="py-6 text-xl">
+                          ${convertToAbbreviated(amount)}
+                        </td>
 
-                    <td className="py-6 text-xl text-right">
-                      {item.processed}
+                        <td className="py-6 text-xl text-red-500">
+                          -${convertToAbbreviated(fee)}
+                        </td>
+
+                        <td className="py-6 text-xl text-emerald-400">
+                          ${convertToAbbreviated(net)}
+                        </td>
+
+                        <td className="py-6">
+                          <span className="text-xl text-emerald-400">
+                            Success
+                          </span>
+                        </td>
+
+                        <td className="py-6 text-xl text-right">
+                          {moment
+                            .unix(Number(tx?.time ?? 0))
+                            .format("D MMM YYYY")}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="py-8 text-center text-gray-400"
+                    >
+                      No Data Found
                     </td>
                   </tr>
-                ))}
+                )}
 
                 {/* Totals */}
                 <tr>
@@ -182,7 +267,7 @@ export default function WithdrawalPage() {
                         Total Requested
                       </p>
                       <h3 className="text-3xl font-bold">
-                        $850.00
+                        ${convertToAbbreviated(withdrawalSummary.totalRequested)}
                       </h3>
                     </div>
                   </td>
@@ -195,7 +280,7 @@ export default function WithdrawalPage() {
                         Total Fees
                       </p>
                       <h3 className="text-3xl font-bold text-red-500">
-                        -$170.00
+                        -${convertToAbbreviated(withdrawalSummary.totalFees)}
                       </h3>
                     </div>
                   </td>
@@ -206,7 +291,7 @@ export default function WithdrawalPage() {
                         Net Received
                       </p>
                       <h3 className="text-3xl font-bold text-emerald-400">
-                        $680.00
+                        ${convertToAbbreviated(withdrawalSummary.netReceived)}
                       </h3>
                     </div>
                   </td>

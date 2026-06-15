@@ -1,19 +1,24 @@
 "use client";
 
+import { dorsenConfig } from "@/app/constants/contract";
 import BalanceCard from "@/components/dashboard/balanceCard";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
+import { useAppKitNetwork } from "@reown/appkit/react";
 import { motion } from "framer-motion";
+import { Address, formatEther } from "viem";
+import { useConnection, useReadContracts } from "wagmi";
 
 const levels = [
-  { level: 1, percent: "50%", amount: "$11.70", members: 5, earned: "$58.50", status: "Open" },
-  { level: 2, percent: "20%", amount: "$4.68", members: 1, earned: "$4.68", status: "Open" },
-  { level: 3, percent: "10%", amount: "$2.34", members: 1, earned: "$2.34", status: "Open" },
-  { level: 4, percent: "5%", amount: "$1.17", members: 1, earned: "$1.17", status: "Open" },
-  { level: 5, percent: "5%", amount: "$1.17", members: 1, earned: "$1.17", status: "Open" },
-  { level: 6, percent: "2%", amount: "$0.47", members: 1, earned: "$0.47", status: "Open" },
-  { level: 7, percent: "2%", amount: "$0.47", members: 0, earned: "$0.00", status: "Open" },
-  { level: 8, percent: "2%", amount: "$0.47", members: 0, earned: "$0.00", status: "Open" },
-  { level: 9, percent: "2%", amount: "$0.47", members: 0, earned: "$0.00", status: "Open" },
-  { level: 10, percent: "2%", amount: "$0.47", members: 0, earned: "$0.00", status: "Diamond Req." },
+  { level: 1, percent: "60" },
+  { level: 2, percent: "20" },
+  { level: 3, percent: "10" },
+  { level: 4, percent: "2" },
+  { level: 5, percent: "2" },
+  { level: 6, percent: "2" },
+  { level: 7, percent: "1" },
+  { level: 8, percent: "1" },
+  { level: 9, percent: "1" },
+  { level: 10, percent: "1" },
 ];
 
 
@@ -22,6 +27,35 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 export default function DirectIncomePage() {
+  const { chainId } = useAppKitNetwork()
+  const { address } = useConnection()
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "getUserInfo",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getUserTotalEarnings",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "isLevelOpen",
+        args: [address as Address, 10],
+        chainId: Number(chainId) ?? 99110,
+      },
+
+    ],
+
+  });
+
+  const isLevel10Open = Boolean(result?.data?.[2]?.result?.[1]);
+
   return (
     <div className="py-5">
       <main className="space-y-6">
@@ -30,12 +64,28 @@ export default function DirectIncomePage() {
         <motion.div
           variants={fadeUp}
           initial="hidden" animate="show"
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"
+          className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6"
         >
 
-          <BalanceCard title={"Total Direct Earned"} token={"$68.33"} usd={"36% of joining amount"} />
-          <BalanceCard title={"Direct Members"} token={"24"} usd={"All 10 levels open"} />
-          <BalanceCard title={"Per Referral (L1)"} token={"$11.70"} usd={"50% of 36% of $65"} />
+          <BalanceCard
+            title={"Total Earned"}
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))))}
+            usd={"36% of joining amount"
+            }
+          />
+
+          <BalanceCard
+            title={"Total Direct Earned"}
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[4] ?? 0))))}
+            usd={"36% of joining amount"
+            }
+          />
+          <BalanceCard
+            title={"Direct Members"}
+            token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7].toString() : "0"}
+            usd={"All 10 levels open"}
+          />
+          <BalanceCard title={"Per Referral (L1)"} token={"$19.5"} usd={"50% of 36% of $65"} />
 
 
         </motion.div>
@@ -73,40 +123,19 @@ export default function DirectIncomePage() {
               </thead>
 
               <tbody>
-                {levels.map((item) => (
+                {levels.map((item, index) => (
                   <tr
-                    key={item.level}
+                    key={index}
                     className="border-b border-white/10 hover:bg-white/5 transition"
                   >
                     <td className="py-5 text-xl">{item.level}</td>
 
                     <td className="py-5 text-xl">
-                      {item.percent}
+                      {item.percent}%
                     </td>
 
-                    <td className="py-5 text-xl font-semibold text-emerald-400">
-                      {item.amount}
-                    </td>
+                    <DynamicData key={index} isLevel10Open={isLevel10Open} level={item.level} chainId={chainId as number} share={Number(item.percent)} address={address as Address} />
 
-                    <td className="py-5 text-xl">
-                      {item.members}
-                    </td>
-
-                    <td className="py-5 text-xl">
-                      {item.earned}
-                    </td>
-
-                    <td className="py-5 text-right">
-                      <span
-                        className={
-                          item.status === "Diamond Req."
-                            ? "text-gray-300"
-                            : "text-emerald-400"
-                        }
-                      >
-                        {item.status}
-                      </span>
-                    </td>
                   </tr>
                 ))}
 
@@ -119,7 +148,11 @@ export default function DirectIncomePage() {
                   </td>
 
                   <td className="pt-6 text-3xl font-bold">
-                    $68.33
+                    ${
+                      convertToAbbreviated(
+                        Number(formatEther(BigInt(result?.data?.[1]?.result?.[4] ?? 0))) +
+                        Number(formatEther(BigInt(result?.data?.[1]?.result?.[5] ?? 0)))
+                      )}
                   </td>
 
                   <td />
@@ -133,14 +166,79 @@ export default function DirectIncomePage() {
   );
 }
 
-function Card({
-  children,
+const DynamicData = ({
+  level,
+  address,
+  chainId,
+  share,
+  isLevel10Open
 }: {
-  children: React.ReactNode;
-}) {
+  level: number;
+  address: Address;
+  chainId: number;
+  share: number;
+  isLevel10Open: boolean
+}) => {
+
+  const reward = 32.5; /// usdt measn 50% of $65
+
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...dorsenConfig,
+        functionName: "isLevelOpen",
+        args: [address as Address, level],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getReferralCountByLevel",
+        args: [address as Address, BigInt(level)],
+        chainId: Number(chainId) ?? 99110,
+      }
+
+    ],
+
+  });
+
+  const currentLevelOpen = Boolean(result?.data?.[0]?.result?.[1]);
+
+  const isOpen = isLevel10Open || currentLevelOpen;
+
   return (
-    <div className="rounded-[28px] border border-cyan-500 bg-black/90 p-8 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
-      {children}
-    </div>
+    <>
+
+      <td className="py-5 text-xl font-semibold text-emerald-400">
+        ${(reward * share) / 100}
+      </td>
+      <td className="py-5 text-xl">
+        {
+          result?.data?.[1]?.result ? result?.data?.[1]?.result : '0'
+        }
+      </td>
+
+      <td className="py-5 text-xl">
+        ${
+          convertToAbbreviated(
+            (reward * share) / 100 * Number(
+              result?.data?.[1]?.result ? result?.data?.[1]?.result : '0'
+            )
+          )
+        }
+      </td>
+
+      <td className="py-5 text-right">
+        <span
+          className={
+            !isOpen
+              ? "text-gray-300"
+              : "text-emerald-400"
+          }
+        >
+          {isOpen ? "Open" : "Progress"}
+        </span>
+      </td>
+    </>
   );
+
 }

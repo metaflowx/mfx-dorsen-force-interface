@@ -10,10 +10,10 @@ import {
   Users,
   Trophy,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReferralCopy from "@/components/dashboard/referralCopy";
 import { useBlockNumber, useConnection, useReadContract, useReadContracts, useWriteContract } from "wagmi";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useCheckAllowance from "../hooks/useCheckAllowance";
 import { dorsenConfig, DorsenForceContractAddress, USDTAddress } from "../constants/contract";
 import { Address, erc20Abi, formatEther, parseEther, parseUnits, zeroAddress } from "viem";
@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import { extractDetailsFromError } from "@/libs/extractDetailsFromError";
 import { stringTrimMiddle } from "@/libs/stringTrimMiddle";
 import { useAppKit, useAppKitNetwork } from "@reown/appkit/react";
+import moment from "moment";
+import { convertToAbbreviated } from "@/libs/convertToAbbreviated";
 
 
 const fadeUp = {
@@ -32,15 +34,15 @@ const fadeUp = {
 export const communityAddress = "0x7c8AB5f6DF4159184261e40EDcb385E45FaBCD5c";
 
 export default function DashboardPage() {
-  const { open, close } = useAppKit();
+  const { open } = useAppKit();
   const { chainId } = useAppKitNetwork()
-  const [loading, setLoading] = useState(false);
-  const { address, isConnected } = useConnection()
+  const { address } = useConnection()
   const searchparm = useSearchParams();
   const [referralAddress, setReferralAddress] = useState(searchparm.get("ref") || "");
   const [isAproveERC20, setIsApprovedERC20] = useState(true);
+  const router = useRouter()
 
-  const { mutateAsync, isPending, isSuccess, isError } =
+  const { mutateAsync, isPending } =
     useWriteContract();
 
   const queryClient = useQueryClient();
@@ -59,6 +61,18 @@ export default function DashboardPage() {
   })
 
 
+  const totalTxHistoryLenth = useReadContract({
+    ...dorsenConfig,
+    functionName: "totalTxHistoryLengthForUser",
+    args: [address as Address],
+  });
+
+  const resultTxHistoryList = useReadContract({
+    ...dorsenConfig,
+    functionName: "user2TxHistoryList",
+    args: [address as Address, BigInt(0), BigInt(totalTxHistoryLenth?.data || 0)],
+  });
+
 
   const result = useReadContracts({
     contracts: [
@@ -74,6 +88,13 @@ export default function DashboardPage() {
         args: [address as Address, referralAddress as Address],
         chainId: Number(chainId) ?? 99110,
       },
+      {
+        ...dorsenConfig,
+        functionName: "getUserTotalEarnings",
+        args: [address as Address],
+        chainId: Number(chainId) ?? 99110,
+      },
+
     ],
 
   });
@@ -92,6 +113,17 @@ export default function DashboardPage() {
     }
   }, [resultOfCheckAllowance, address]);
 
+
+  const { data: resultOfTokenBalance, queryKey: resultOfTokenBalanceQueryKey } = useReadContract({
+    abi: erc20Abi,
+    address: USDTAddress,
+    functionName: "balanceOf",
+    args: [address as Address],
+    account: address,
+    chainId: Number(chainId) ?? 99110
+  });
+
+
   useEffect(() => {
     if (!blockNumber) return;
     queryClient.invalidateQueries({
@@ -100,13 +132,19 @@ export default function DashboardPage() {
     queryClient.invalidateQueries({
       queryKey: result.queryKey,
     });
-  }, [blockNumber, !result.queryKey, !resultOfCheckAllowance.queryKey]);
+    queryClient.invalidateQueries({
+      queryKey: resultOfTokenBalanceQueryKey,
+    });
+    queryClient.invalidateQueries({
+      queryKey: totalTxHistoryLenth.queryKey,
+    });
+    queryClient.invalidateQueries({
+      queryKey: resultTxHistoryList.queryKey,
+    });
+  }, [blockNumber, !result.queryKey, resultOfTokenBalanceQueryKey, !totalTxHistoryLenth.queryKey, !resultTxHistoryList.queryKey, !resultOfCheckAllowance.queryKey]);
 
   const joining = async () => {
     try {
-      const formattedAmount = parseUnits("65", 18);
-      const tokenAddress = USDTAddress;
-
       const res = await mutateAsync({
         ...dorsenConfig,
         functionName: "Joining",
@@ -142,14 +180,19 @@ export default function DashboardPage() {
     }
   };
 
-  const { data: resultOfTokenBalance } = useReadContract({
-    abi: erc20Abi,
-    address: USDTAddress,
-    functionName: "balanceOf",
-    args: [address as Address],
-    account: address,
-    chainId: Number(chainId) ?? 99110,
-  });
+
+  const recentWithdrawals = useMemo(() => {
+    const txs = resultTxHistoryList?.data || [];
+
+    return [...txs]
+      .slice(-3) /// last 3 records
+      .reverse(); /// newest first
+  }, [resultTxHistoryList?.data]);
+
+
+
+
+
 
 
   return (
@@ -162,7 +205,7 @@ export default function DashboardPage() {
         <div className="rounded-3xl border border-purple-500 bg-black/80 backdrop-blur-md p-6 flex flex-col lg:flex-row justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold">
-              R
+              D
             </div>
 
             <div>
@@ -173,9 +216,12 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              <p className="text-gray-400">
-                • Member since 5 Apr 2026
-              </p>
+              {
+                Number(result?.data?.[0]?.result?.[8]) > 0 &&
+                <p className="text-gray-400">
+                  • Member since {moment.unix(Number(result?.data?.[0]?.result?.[8])).format("D MMM YYYY")}
+                </p>
+              }
             </div>
           </div>
 
@@ -187,7 +233,7 @@ export default function DashboardPage() {
 
             <div>
               <p className="text-gray-400 text-sm">Direct Members</p>
-              <h3 className="text-3xl font-bold">24</h3>
+              <h3 className="text-3xl font-bold">{result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7] : 0}</h3>
             </div>
 
             <div>
@@ -204,10 +250,23 @@ export default function DashboardPage() {
           className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6"
         >
 
-          <BalanceCard title={"Total Earnings"} token={"$4,820.50"} usd={"$4,820.50"} />
-          <BalanceCard title={"Wallet Balance"} token={"$1,240.75"} usd={"$1,240.75"} />
-          <BalanceCard title={"Direct Referrals"} token={"24"} usd={"24"} />
-          <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Diamond"} />
+          <BalanceCard
+            title={"Total Earnings"}
+            token={
+              convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[2]?.result?.[6] ?? 0))))
+
+            }
+            usd={"$4,820.50"}
+          />
+          <BalanceCard
+            title={"Wallet Balance"}
+            token={
+              convertToAbbreviated(Number(formatEther(BigInt(resultOfTokenBalance ?? 0))))
+            }
+            usd={"$1,240.75"}
+          />
+          <BalanceCard title={"Direct Referrals"} token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7]?.toString() : "0"} usd={"24"} />
+          <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Basic"} />
 
         </motion.div>
 
@@ -248,7 +307,7 @@ export default function DashboardPage() {
             {
               address ? (
                 <button
-                  className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
+                  className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
                   disabled={
                     isPending ||
                     Number(formatEther(BigInt(resultOfTokenBalance ?? 0))) < 65 ||
@@ -285,7 +344,7 @@ export default function DashboardPage() {
                 </button>
               ) : (
                 <button
-                  className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
+                  className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
                   onClick={async () => open()}
                 >
                   Connect Wallet
@@ -380,7 +439,9 @@ export default function DashboardPage() {
               />
             </div>
 
-            <button className="mt-6 text-cyan-400 hover:text-cyan-300">
+            <button className="mt-6 text-cyan-400 hover:text-cyan-300 cursor-pointer" onClick={() => {
+              router.push("/dashboard/autopool")
+            }}>
               View all 10 levels →
             </button>
           </div>
@@ -393,35 +454,30 @@ export default function DashboardPage() {
               Recent Withdrawals
             </h2>
 
-            <button className="text-cyan-400">
+            <button className="text-cyan-400 cursor-pointer" onClick={() => {
+              router.push("/dashboard/withdraw")
+            }}>
               View All →
             </button>
           </div>
 
           <div className="space-y-8">
-            <WithdrawalItem
-              title="Direct"
-              date="22 Apr 2026"
-              amount="$160.00"
-              status="paid"
-              color="text-green-400"
-            />
-
-            <WithdrawalItem
-              title="Autopool"
-              date="12 May 2026"
-              amount="$400.00"
-              status="approved"
-              color="text-cyan-400"
-            />
-
-            <WithdrawalItem
-              title="Leadership"
-              date="20 May 2026"
-              amount="$120.00"
-              status="pending"
-              color="text-yellow-400"
-            />
+            {recentWithdrawals.length > 0 ? (
+              recentWithdrawals?.map((tx: any, index) => (
+                <WithdrawalItem
+                  key={index}
+                  title={tx?.incomeType || "Withdrawal"}
+                  date={moment.unix(Number(tx?.time)).format("D MMM YYYY")}
+                  amount={`$${convertToAbbreviated(Number(formatEther(BigInt(tx?.amount ?? 0))))}`}
+                  status="success"
+                  color="text-green-400"
+                />
+              ))) : (
+              <div className="py-8 text-center text-gray-400">
+                No Data Found
+              </div>
+            )
+            }
           </div>
         </div>
         <motion.div
@@ -437,27 +493,6 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({
-  title,
-  value,
-  icon,
-}: {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-3xl border border-purple-500 bg-black/80 p-6">
-      <div className="text-cyan-400 mb-4">{icon}</div>
-
-      <p className="text-gray-400">{title}</p>
-
-      <h3 className="text-4xl font-bold mt-2">
-        {value}
-      </h3>
-    </div>
-  );
-}
 
 function IncomeRow({
   title,
