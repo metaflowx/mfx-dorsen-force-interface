@@ -19,7 +19,7 @@ if (!projectId) {
 const metadata = {
     name: 'Dorsen Force',
     description: 'Dorsen Force',
-    url: 'https://dorsen.org', // origin must match your domain & subdomain
+    url: 'https://dorsenforce.com', // origin must match your domain & subdomain
     icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
