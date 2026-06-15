@@ -2,32 +2,9 @@
 
 import React from "react";
 import {
-  createAppKit,
   useAppKit,
   useAppKitAccount,
 } from "@reown/appkit/react";
-import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { mainnet } from "@reown/appkit/networks";
-
-// Initialize ONCE
-const projectId = "YOUR_PROJECT_ID";
-
-const wagmiAdapter = new WagmiAdapter({
-  projectId,
-  networks: [mainnet],
-});
-
-createAppKit({
-  adapters: [wagmiAdapter],
-  projectId,
-  networks: [mainnet],
-  metadata: {
-    name: "My App",
-    description: "My App",
-    url: "https://myapp.com",
-    icons: [],
-  },
-});
 
 export default function ConnectWallet() {
   const { address } = useAppKitAccount();
