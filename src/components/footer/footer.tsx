@@ -332,8 +332,8 @@ const Footer = () => {
 
             <ul className="flex gap-3">
               {[
-                { icon: "ss1", url: "" },
-                { icon: "tl", url: "" },
+                { icon: "ss1", url: "https://x.com/dorsenofficial" },
+                { icon: "tl", url: "https://t.me/dorsenlabs" },
                 // { icon: "ss3", url: "https://instagram.com" },
                 // { icon: "ss4", url: "https://linkedin.com" },
               ].map(({ icon, url }, i) => (
