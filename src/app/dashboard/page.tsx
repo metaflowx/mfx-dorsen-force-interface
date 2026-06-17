@@ -94,6 +94,18 @@ export default function DashboardPage() {
         args: [address as Address],
         chainId: Number(chainId) ?? 99110,
       },
+      {
+        ...dorsenConfig,
+        functionName: "getSlotInfo",
+        args: [address as Address, 2],
+        chainId: Number(chainId) ?? 99110,
+      },
+      {
+        ...dorsenConfig,
+        functionName: "getSlotInfo",
+        args: [address as Address, 3],
+        chainId: Number(chainId) ?? 99110,
+      },
 
     ],
 
@@ -266,7 +278,14 @@ export default function DashboardPage() {
             usd={"$1,240.75"}
           />
           <BalanceCard title={"Direct Referrals"} token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7]?.toString() : "0"} usd={"24"} />
-          <BalanceCard title={"Network Rank"} token={"Diamond"} usd={"Basic"} />
+          <BalanceCard
+            title={"Network Rank"}
+            token={
+              Number(result?.data?.[3]?.result?.[1] ?? 0) === 1 ? "Diamond" : (
+                Number(result?.data?.[4]?.result?.[1] ?? 0) === 1 ? "Elite" : "None"
+              )
+            }
+            usd={"Basic"} />
 
         </motion.div>
 
@@ -428,14 +447,14 @@ export default function DashboardPage() {
 
               <LevelRow
                 level="Level 4"
-                members="2 members"
-                amount="$5"
+                members="16 members"
+                amount="$40"
               />
 
               <LevelRow
                 level="Level 5"
-                members="2 members"
-                amount="$5"
+                members="32 members"
+                amount="$80"
               />
             </div>
 

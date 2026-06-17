@@ -14,7 +14,7 @@ if (!projectId) {
   throw new Error('Project ID is not defined')
 }
 
-export const networks = [dorsenTestnet, dorsenMainnet] as [AppKitNetwork, ...AppKitNetwork[]]
+export const networks = [dorsenMainnet] as [AppKitNetwork, ...AppKitNetwork[]]
 
 //Set up the Wagmi Adapter (Config)
 export const wagmiAdapter = new WagmiAdapter({
@@ -25,7 +25,6 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
   transports: {
-    [dorsenTestnet.id]: http(dorsenTestnet.rpcUrls.default.http[0]),
     [dorsenMainnet.id]: http(dorsenMainnet.rpcUrls.default.http[0])
   },
 })

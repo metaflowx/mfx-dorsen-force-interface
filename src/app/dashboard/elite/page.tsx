@@ -104,8 +104,8 @@ const elitePools = [
     level: "10",
     members: 1024,
     amount: "$100,000",
-    points: "1000P",
-    withdraw: "1000",
+    points: "200P",
+    withdraw: "200",
     progress: 0,
     status: "Pending",
   },
@@ -121,7 +121,7 @@ const withdrawalConditions = [
   { pool: 7, directs: 8 },
   { pool: 8, directs: 20 },
   { pool: 9, directs: 50 },
-  { pool: 10, directs: 1000 },
+  { pool: 10, directs: 200 },
 ];
 
 export default function ElitePage() {
