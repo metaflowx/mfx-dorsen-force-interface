@@ -31,7 +31,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export const communityAddress = "0x7c8AB5f6DF4159184261e40EDcb385E45FaBCD5c";
+export const communityAddress = "0xcdf7f95dEe5eE528DeaC6324604efEDF794c9Ac7";
 
 export default function DashboardPage() {
   const { open } = useAppKit();
