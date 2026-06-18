@@ -192,7 +192,7 @@ const DynamicTableBodyData = ({
       },
       {
         ...dorsenConfig,
-        functionName: "getReferralCountByLevel",
+        functionName: "getDownlineReferralAtLevel",
         args: [address as Address, BigInt(level)],
         chainId: Number(chainId) ?? 99110,
       }
@@ -213,7 +213,7 @@ const DynamicTableBodyData = ({
       </td>
       <td className="py-5 text-xl">
         {
-          result?.data?.[1]?.result ? result?.data?.[1]?.result : '0'
+          result?.data?.[1]?.result ? result?.data?.[1]?.result?.length : '0'
         }
       </td>
 
@@ -221,7 +221,7 @@ const DynamicTableBodyData = ({
         ${
           convertToAbbreviated(
             (reward * share) / 100 * Number(
-              result?.data?.[1]?.result ? result?.data?.[1]?.result : '0'
+              result?.data?.[1]?.result ? result?.data?.[1]?.result?.length : '0'
             )
           )
         }
