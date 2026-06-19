@@ -31,7 +31,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export const communityAddress = "0xcdf7f95dEe5eE528DeaC6324604efEDF794c9Ac7";
+// export const communityAddress = "0xcdf7f95dEe5eE528DeaC6324604efEDF794c9Ac7";
 
 export default function DashboardPage() {
   const { open } = useAppKit();
@@ -160,7 +160,7 @@ export default function DashboardPage() {
       const res = await mutateAsync({
         ...dorsenConfig,
         functionName: "Joining",
-        args: [((referralAddress || communityAddress) as Address)],
+        args: [referralAddress as Address],
       });
 
       if (res) {
@@ -306,22 +306,20 @@ export default function DashboardPage() {
               />
             </div>
 
-            {referralAddress &&
 
-              <div>
-                <label className="mb-2 block text-gray-400">
-                  Sponsor Address
-                </label>
+            <div>
+              <label className="mb-2 block text-gray-400">
+                Sponsor Address
+              </label>
 
-                <input
-                  type="text"
-                  value={referralAddress}
-                  onChange={(e) => setReferralAddress(e.target.value)}
-                  placeholder="Enter sponsor wallet address"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
-                />
-              </div>
-            }
+              <input
+                type="text"
+                value={referralAddress}
+                onChange={(e) => setReferralAddress(e.target.value)}
+                placeholder="Enter sponsor wallet address"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white"
+              />
+            </div>
 
             {
               address ? (
@@ -329,6 +327,7 @@ export default function DashboardPage() {
                   className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-purple-700 py-4 font-semibold text-white disabled:opacity-50"
                   disabled={
                     isPending ||
+                    referralAddress === '' ||
                     Number(formatEther(BigInt(resultOfTokenBalance ?? 0))) < 65 ||
                     Number(result?.data?.[0]?.result?.[0] ?? 0) !== 0 ||
                     (referralAddress !== '' && Boolean(result?.data?.[1]?.result) === false)
@@ -347,7 +346,7 @@ export default function DashboardPage() {
                           ? isAproveERC20
                             ? "Joining..."
                             : "Approving..."
-                          : (referralAddress && Boolean(result?.data?.[1]?.result) === false) ?
+                          : referralAddress === '' ? 'Sponsor is required' : Boolean(result?.data?.[1]?.result) === false ?
                             "Invalid Sponsor"
                             : (
                               Number(
