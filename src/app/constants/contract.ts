@@ -1,7 +1,7 @@
 import { DorsenForceABI } from "../ABI/DorsenForceABI";
 
-export const DorsenForceContractAddress = "0x024d6e3CFBB11693776eF989B524fC7b53FC2906";
-export const USDTAddress = "0x3890eCD0c3fFB1C4ad1bA98f072EF1e45c08ec0E"
+export const DorsenForceContractAddress = "0xc14FF9fc6FE48147C507301808414Be784e5392e";
+export const USDTAddress = "0x092b57181C5c752888eD706CAA0654DBd44AB953"
 
 
 

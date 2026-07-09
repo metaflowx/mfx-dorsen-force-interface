@@ -44,7 +44,7 @@ export default function LeadershipBonusPage() {
       {
         ...dorsenConfig,
         functionName: "getDownlineReferralAtLevel",
-        args: [address as Address, BigInt(1)],
+        args: [address as Address, 1],
         chainId: Number(chainId) ?? 99110,
       },
 
@@ -56,8 +56,8 @@ export default function LeadershipBonusPage() {
     const userInfo = result?.data?.[0]?.result;
     const earnings = result?.data?.[1]?.result;
 
-    const earned = Number(formatEther(BigInt(earnings?.[3] ?? 0)));
-    const pending = Number(formatEther(BigInt(userInfo?.[6] ?? 0)));
+    const earned = Number(formatEther(BigInt(earnings?.[4] ?? 0)));
+    const pending = Number(formatEther(BigInt(userInfo?.[8] ?? 0)));
     /// total leadership bonus (this is 10% share)
     const totalLeadershipBonus = earned + pending;
     /// reverse calculate sponsor earnings (100%)
@@ -68,7 +68,7 @@ export default function LeadershipBonusPage() {
       leadershipBonusEarned: earned,
       leadershipPendingBonus: pending,
       sponsorTotalEarnings: sponsorTotalEarnings,
-      activeSponsors: Number(userInfo?.[7] ?? 0),
+      activeSponsors: Number(userInfo?.[9] ?? 0),
     };
   }, [result?.data]);
 
@@ -275,7 +275,7 @@ const TableBodyData = ({
         </td>
 
         <td className="py-6 text-xl">
-          {convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))))}
+          {convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[8] ?? 0))))}
         </td>
 
         <td className="py-6 text-xl text-yellow-400">
@@ -283,11 +283,11 @@ const TableBodyData = ({
         </td>
 
         <td className="py-6 text-xl text-emerald-400 font-medium">
-          {convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))) * 0.1)}
+          {convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[8] ?? 0))) * 0.1)}
         </td>
 
         <td className="py-6 text-xl text-right">
-          {moment.unix(Number(result?.data?.[0]?.result?.[8] ?? 0)).format("D MMM YYYY")}
+          {moment.unix(Number(result?.data?.[0]?.result?.[10] ?? 0)).format("D MMM YYYY")}
         </td>
       </tr>
     </>

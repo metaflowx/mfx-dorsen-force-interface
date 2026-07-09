@@ -18,11 +18,12 @@ export default function Sidebar() {
     const navItems = [
         { label: "Dashboard", icon: <MdDashboard size={20} />, href: "/dashboard" },
         { label: "Direct Income", icon: <RiExchangeFundsFill size={20} />, href: "/dashboard/direct-income" },
-        { label: "Autopool Matrix", icon: <GrTransaction size={20} />, href: "/dashboard/autopool" },
+        { label: "Autopool Matrix", icon: <FaUsers size={20} />, href: "/dashboard/autopool" },
         { label: "Diamond Autopool", icon: <FaUsers size={20} />, href: "/dashboard/daimond" },
         { label: "Elite Autopool", icon: <FaUsers size={20} />, href: "/dashboard/elite" },
-        { label: "Leadership Bonus", icon: <HiUserCircle size={20} />, href: "/dashboard/leaderboard" },
-        { label: "Withdraw", icon: <HiUserCircle size={20} />, href: "/dashboard/withdraw" },
+        { label: "Elite Level Pool", icon: <RiExchangeFundsFill size={20} />, href: "/dashboard/elitelevel" },
+        { label: "Leadership Bonus", icon: <FaUsers size={20} />, href: "/dashboard/leaderboard" },
+        { label: "Withdraw", icon: <GrTransaction size={20} />, href: "/dashboard/withdraw" },
         { label: "Profile", icon: <HiUserCircle size={20} />, href: "/dashboard/profile" },
     ];
 

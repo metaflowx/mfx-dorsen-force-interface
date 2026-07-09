@@ -153,7 +153,7 @@ export default function DashboardPage() {
     queryClient.invalidateQueries({
       queryKey: resultTxHistoryList.queryKey,
     });
-  }, [blockNumber, !result.queryKey, resultOfTokenBalanceQueryKey, !totalTxHistoryLenth.queryKey, !resultTxHistoryList.queryKey, !resultOfCheckAllowance.queryKey]);
+  }, [blockNumber, !result.queryKey, !resultOfTokenBalanceQueryKey, !totalTxHistoryLenth.queryKey, !resultTxHistoryList.queryKey, !resultOfCheckAllowance.queryKey]);
 
   const joining = async () => {
     try {
@@ -229,9 +229,9 @@ export default function DashboardPage() {
               </div>
 
               {
-                Number(result?.data?.[0]?.result?.[8]) > 0 &&
+                Number(result?.data?.[0]?.result?.[10]) > 0 &&
                 <p className="text-gray-400">
-                  • Member since {moment.unix(Number(result?.data?.[0]?.result?.[8])).format("D MMM YYYY")}
+                  • Member since {moment.unix(Number(result?.data?.[0]?.result?.[10])).format("D MMM YYYY")}
                 </p>
               }
             </div>
@@ -245,7 +245,7 @@ export default function DashboardPage() {
 
             <div>
               <p className="text-gray-400 text-sm">Direct Members</p>
-              <h3 className="text-3xl font-bold">{result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7] : 0}</h3>
+              <h3 className="text-3xl font-bold">{result?.data?.[0]?.result?.[9] ? result?.data?.[0]?.result?.[9] : 0}</h3>
             </div>
 
             <div>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
           <BalanceCard
             title={"Total Earnings"}
             token={
-              convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[2]?.result?.[6] ?? 0))))
+              convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[2]?.result?.[8] ?? 0))))
 
             }
             usd={"$4,820.50"}
@@ -277,7 +277,7 @@ export default function DashboardPage() {
             }
             usd={"$1,240.75"}
           />
-          <BalanceCard title={"Direct Referrals"} token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7]?.toString() : "0"} usd={"24"} />
+          <BalanceCard title={"Direct Referrals"} token={result?.data?.[0]?.result?.[9] ? result?.data?.[0]?.result?.[9]?.toString() : "0"} usd={"24"} />
           <BalanceCard
             title={"Network Rank"}
             token={

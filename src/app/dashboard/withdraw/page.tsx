@@ -76,7 +76,9 @@ export default function WithdrawalPage() {
       Number(formatEther(data[0])) +
       Number(formatEther(data[1])) +
       Number(formatEther(data[2])) +
-      Number(formatEther(data[3]));
+      Number(formatEther(data[3])) +
+      Number(formatEther(data[4])) +
+      Number(formatEther(data[5]));
 
     const adminFee = totalWithdraw * 0.2;
     const totalReceived = totalWithdraw - adminFee;
@@ -88,26 +90,26 @@ export default function WithdrawalPage() {
     };
   }, [totalUserEarnings.data]);
 
-  const withdrawalSummary = useMemo(() => {
-    const txs = latestWithdrawals || [];
+  // const withdrawalSummary = useMemo(() => {
+  //   const txs = latestWithdrawals || [];
 
-    const totalRequested = txs.reduce(
-      (sum: number, tx: any) =>
-        sum +
-        Number(formatEther(BigInt(tx?.amount ?? 0))),
-      0
-    );
+  //   const totalRequested = txs.reduce(
+  //     (sum: number, tx: any) =>
+  //       sum +
+  //       Number(formatEther(BigInt(tx?.amount ?? 0))),
+  //     0
+  //   );
 
-    const totalFees = totalRequested * 0.2;
+  //   const totalFees = totalRequested * 0.2;
 
-    const netReceived = totalRequested - totalFees;
+  //   const netReceived = totalRequested - totalFees;
 
-    return {
-      totalRequested,
-      totalFees,
-      netReceived,
-    };
-  }, [latestWithdrawals]);
+  //   return {
+  //     totalRequested,
+  //     totalFees,
+  //     netReceived,
+  //   };
+  // }, [latestWithdrawals]);
 
   return (
     <div className="py-5">
@@ -267,7 +269,7 @@ export default function WithdrawalPage() {
                         Total Requested
                       </p>
                       <h3 className="text-3xl font-bold">
-                        ${convertToAbbreviated(withdrawalSummary.totalRequested)}
+                        ${convertToAbbreviated(withdrawalStats.totalWithdraw)}
                       </h3>
                     </div>
                   </td>
@@ -280,7 +282,7 @@ export default function WithdrawalPage() {
                         Total Fees
                       </p>
                       <h3 className="text-3xl font-bold text-red-500">
-                        -${convertToAbbreviated(withdrawalSummary.totalFees)}
+                        -${convertToAbbreviated(withdrawalStats.adminFee)}
                       </h3>
                     </div>
                   </td>
@@ -291,7 +293,7 @@ export default function WithdrawalPage() {
                         Net Received
                       </p>
                       <h3 className="text-3xl font-bold text-emerald-400">
-                        ${convertToAbbreviated(withdrawalSummary.netReceived)}
+                        ${convertToAbbreviated(withdrawalStats.totalReceived)}
                       </h3>
                     </div>
                   </td>

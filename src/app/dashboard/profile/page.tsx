@@ -60,7 +60,7 @@ export default function ProfilePage() {
         >
           <BalanceCard
             title="Your Referrals"
-            token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7].toString() : "0"}
+            token={result?.data?.[0]?.result?.[9] ? result?.data?.[0]?.result?.[9].toString() : "0"}
             usd=""
           />
 
@@ -69,8 +69,8 @@ export default function ProfilePage() {
             token={
               `
               $${convertToAbbreviated(
-                Number(formatEther(BigInt(result?.data?.[1]?.result?.[4] ?? 0))) +
-                Number(formatEther(BigInt(result?.data?.[1]?.result?.[5] ?? 0)))
+                Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))) +
+                Number(formatEther(BigInt(result?.data?.[1]?.result?.[7] ?? 0)))
               )}
               `
             }

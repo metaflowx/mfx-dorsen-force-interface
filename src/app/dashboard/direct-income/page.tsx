@@ -69,20 +69,20 @@ export default function DirectIncomePage() {
 
           <BalanceCard
             title={"Total Earned"}
-            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))))}
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[8] ?? 0))))}
             usd={"36% of joining amount"
             }
           />
 
           <BalanceCard
             title={"Total Direct Earned"}
-            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[4] ?? 0))))}
+            token={convertToAbbreviated(Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))))}
             usd={"36% of joining amount"
             }
           />
           <BalanceCard
             title={"Direct Members"}
-            token={result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7].toString() : "0"}
+            token={result?.data?.[0]?.result?.[9] ? result?.data?.[0]?.result?.[9].toString() : "0"}
             usd={"All 10 levels open"}
           />
           <BalanceCard title={"Per Referral (L1)"} token={"$19.5"} usd={"50% of 36% of $65"} />
@@ -150,8 +150,8 @@ export default function DirectIncomePage() {
                   <td className="pt-6 text-3xl font-bold">
                     ${
                       convertToAbbreviated(
-                        Number(formatEther(BigInt(result?.data?.[1]?.result?.[4] ?? 0))) +
-                        Number(formatEther(BigInt(result?.data?.[1]?.result?.[5] ?? 0)))
+                        Number(formatEther(BigInt(result?.data?.[1]?.result?.[6] ?? 0))) +
+                        Number(formatEther(BigInt(result?.data?.[1]?.result?.[7] ?? 0)))
                       )}
                   </td>
 
@@ -193,7 +193,7 @@ const DynamicTableBodyData = ({
       {
         ...dorsenConfig,
         functionName: "getDownlineReferralAtLevel",
-        args: [address as Address, BigInt(level)],
+        args: [address as Address, level],
         chainId: Number(chainId) ?? 99110,
       }
 

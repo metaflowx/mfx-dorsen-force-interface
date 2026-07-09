@@ -177,7 +177,7 @@ export default function DiamondPage() {
           <BalanceCard
             title="Points Earned"
             token={
-              `${result?.data?.[0]?.result?.[7] ? result?.data?.[0]?.result?.[7] : 0}P
+              `${result?.data?.[0]?.result?.[9] ? result?.data?.[0]?.result?.[9] : 0}P
               `
             }
             usd="From completed pools"
