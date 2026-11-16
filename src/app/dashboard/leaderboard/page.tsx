@@ -57,7 +57,7 @@ export default function LeadershipBonusPage() {
     const earnings = result?.data?.[1]?.result;
 
     const earned = Number(formatEther(BigInt(earnings?.[4] ?? 0)));
-    const pending = Number(formatEther(BigInt(userInfo?.[8] ?? 0)));
+    const pending = Number(formatEther(BigInt(userInfo?.[7] ?? 0)));
     /// total leadership bonus (this is 10% share)
     const totalLeadershipBonus = earned + pending;
     /// reverse calculate sponsor earnings (100%)

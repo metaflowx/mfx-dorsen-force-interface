@@ -31,6 +31,20 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+const levels = [
+  { level: 1, percent: "60" },
+  { level: 2, percent: "20" },
+  { level: 3, percent: "10" },
+  { level: 4, percent: "2" },
+  { level: 5, percent: "2" },
+  { level: 6, percent: "2" },
+  { level: 7, percent: "1" },
+  { level: 8, percent: "1" },
+  { level: 9, percent: "1" },
+  { level: 10, percent: "1" },
+];
+
+
 // export const communityAddress = "0xcdf7f95dEe5eE528DeaC6324604efEDF794c9Ac7";
 
 export default function DashboardPage() {
@@ -203,8 +217,40 @@ export default function DashboardPage() {
 
 
 
+  const levelCounts = useReadContracts({
+    contracts: levels.map((item) => ({
+      ...dorsenConfig,
+      functionName: "getDownlineReferralAtLevel",
+      args: [address as Address, item.level],
+      chainId: Number(chainId) || 99110,
+    })),
+    query: {
+      enabled: Boolean(address),
+    },
+  });
 
+  type LevelCountResult = {
+    status: string;
+    result?: unknown;
+  };
 
+  function calculateTotalTeamMembers(data: unknown): number {
+    const results = data as LevelCountResult[] | undefined;
+
+    let total = 0;
+
+    for (const item of results ?? []) {
+      if (item.status === "success" && Array.isArray(item.result)) {
+        total += item.result.length;
+      }
+    }
+
+    return total;
+  }
+
+  const totalTeamMembers = calculateTotalTeamMembers(
+    levelCounts.data as unknown
+  );
 
 
   return (
@@ -249,8 +295,8 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <p className="text-gray-400 text-sm">Network Level</p>
-              <h3 className="text-3xl font-bold">10</h3>
+              <p className="text-gray-400 text-sm">Total Team</p>
+              <h3 className="text-3xl font-bold">{totalTeamMembers}</h3>
             </div>
           </div>
         </div>

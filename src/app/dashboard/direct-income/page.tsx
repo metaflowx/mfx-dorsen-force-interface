@@ -98,7 +98,6 @@ export default function DirectIncomePage() {
 
           <ul className="space-y-2 text-gray-200 text-lg">
             <li>▪ 20 direct referrals required to open all 10 levels permanently.</li>
-            <li>▪ Complete 10 direct referrals within 30 days to open all 10 levels.</li>
             <li>▪ Level 10 bonus requires Diamond rank.</li>
           </ul>
         </div>
